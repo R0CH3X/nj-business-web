@@ -1,0 +1,82 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
+
+@custom-variant dark (&:is(.dark *));
+
+@theme {
+  --font-playfair: var(--font-playfair);
+  --font-dm-sans: var(--font-dm-sans);
+  --font-cormorant: var(--font-cormorant);
+}
+
+:root {
+  --cream: #FAF7F4;
+  --warm-black: #1A1612;
+  --warm-gray: #6B6560;
+  --surface: #F0ECE8;
+  --border: #E2DDD9;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background-color: var(--cream);
+  color: var(--warm-black);
+}
+
+/* Editorial typography helpers */
+.headline-xl {
+  font-family: var(--font-playfair);
+  font-size: clamp(3rem, 8vw, 6rem);
+  font-weight: 700;
+  line-height: 1.05;
+  letter-spacing: -0.02em;
+}
+
+.headline-lg {
+  font-family: var(--font-playfair);
+  font-size: clamp(2rem, 5vw, 3.5rem);
+  font-weight: 700;
+  line-height: 1.1;
+}
+
+.headline-md {
+  font-family: var(--font-playfair);
+  font-size: clamp(1.5rem, 3vw, 2.25rem);
+  font-weight: 400;
+  line-height: 1.2;
+}
+
+.quote-text {
+  font-family: var(--font-cormorant);
+  font-size: clamp(1.25rem, 2.5vw, 1.75rem);
+  font-style: italic;
+  line-height: 1.5;
+}
+
+/* Mobile sticky CTA bar — hidden on desktop */
+.mobile-cta-bar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 50;
+  display: flex;
+}
+
+@media (min-width: 768px) {
+  .mobile-cta-bar {
+    display: none;
+  }
+}
+
+img {
+  transition: opacity 0.3s ease;
+}
