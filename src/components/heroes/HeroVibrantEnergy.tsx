@@ -2,28 +2,22 @@
 // Template: VIBRANT ENERGY — Estilo's Beauty Salon
 // Feeling: energético, cálido, accesible — fondo en acento claro, foto a todo, texto superpuesto con carácter
 
-import { useEffect, useRef } from "react"
+import { motion } from "framer-motion"
 import Image from "next/image"
 import type { Salon } from "@/data/salons"
+import { getSalonImages } from "@/data/salonImages"
+import { useLanguage, pick } from "@/contexts/LanguageContext"
 
 export default function HeroVibrantEnergy({ salon }: { salon: Salon }) {
-  const contentRef = useRef<HTMLDivElement>(null)
-
-  useEffect(() => {
-    setTimeout(() => {
-      if (contentRef.current) {
-        contentRef.current.style.opacity = "1"
-        contentRef.current.style.transform = "translateY(0)"
-      }
-    }, 200)
-  }, [])
+  const { t, lang } = useLanguage()
+  const { hero: imgSrc } = getSalonImages(salon.slug)
 
   return (
     <section className="relative min-h-screen overflow-hidden" style={{ backgroundColor: salon.accentLight }}>
       {/* Full-bleed background photo with strong overlay */}
       <div className="absolute inset-0 z-0">
         <Image
-          src="https://images.unsplash.com/photo-1560066984-138dadb4c035?w=1400&q=80&auto=format&fit=crop"
+          src={imgSrc}
           alt={salon.name}
           fill
           priority
@@ -37,22 +31,19 @@ export default function HeroVibrantEnergy({ salon }: { salon: Salon }) {
       </div>
 
       {/* Content over photo */}
-      <div
-        ref={contentRef}
+      <motion.div
         className="relative z-10 flex flex-col justify-end min-h-screen px-8 md:px-16 pb-16 pt-28"
-        style={{
-          opacity: 0,
-          transform: "translateY(24px)",
-          transition: "opacity 0.7s ease, transform 0.7s ease",
-        }}
+        initial={{ opacity: 0, y: 24 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.7, delay: 0.15, ease: [0.22, 1, 0.36, 1] }}
       >
         <div className="max-w-2xl">
           {/* Eyebrow */}
           <div className="flex items-center gap-3 mb-6">
             <div className="h-px w-10 bg-white/60" />
-            <span className="text-sm font-light text-white/70 tracking-widest uppercase"
+            <span key={lang} className="lang-fade-in text-sm font-light text-white/70 tracking-widest uppercase"
               style={{ fontFamily: "var(--font-dm-sans)" }}>
-              Full Service Salon · {salon.city}, NJ
+              {pick(lang, "Full Service Salon", "Salón de Servicio Completo")} · {salon.city}, NJ
             </span>
           </div>
 
@@ -70,21 +61,17 @@ export default function HeroVibrantEnergy({ salon }: { salon: Salon }) {
             {salon.name}
           </h1>
 
-          {/* Tagline below in different weight */}
-          <p className="mt-5 text-xl font-light text-white/80"
+          {/* Tagline */}
+          <p key={lang} className="lang-fade-in mt-5 text-xl font-light text-white/80"
             style={{ fontFamily: "var(--font-dm-sans)" }}>
-            {salon.tagline}
-          </p>
-          <p className="mt-2 text-base italic text-white/60"
-            style={{ fontFamily: "var(--font-cormorant)", fontSize: "1.1rem" }}>
-            {salon.taglineEs}
+            {pick(lang, salon.tagline, salon.taglineEs)}
           </p>
 
           {/* Rating pill */}
           <div className="flex items-center gap-4 mt-8 mb-10">
             <span className="inline-flex items-center gap-2 px-4 py-2 bg-white/15 backdrop-blur-sm text-white text-sm font-medium"
               style={{ borderRadius: "30px", fontFamily: "var(--font-dm-sans)" }}>
-              ★ {salon.rating} · {salon.reviewCount} reviews
+              ★ {salon.rating} · {salon.reviewCount} {t.reviewsLabel}
             </span>
             <span className="text-white/50 text-xs" style={{ fontFamily: "var(--font-dm-sans)" }}>
               {salon.hours}
@@ -96,12 +83,12 @@ export default function HeroVibrantEnergy({ salon }: { salon: Salon }) {
             <a href={`tel:${salon.phone}`}
               className="inline-flex items-center gap-2 px-7 py-4 text-sm font-semibold text-[#1A1612] transition-opacity hover:opacity-90"
               style={{ backgroundColor: "#FFFFFF", borderRadius: "3px", fontFamily: "var(--font-dm-sans)" }}>
-              Call Now · {salon.phoneFormatted}
+              {t.callNow} · {salon.phoneFormatted}
             </a>
             <a href={`https://wa.me/${salon.phone}`} target="_blank" rel="noopener noreferrer"
               className="inline-flex items-center gap-2 px-7 py-4 text-sm font-medium text-white border border-white/30 hover:bg-white/10 transition-colors"
               style={{ borderRadius: "3px", fontFamily: "var(--font-dm-sans)" }}>
-              WhatsApp
+              {t.whatsapp}
             </a>
           </div>
 
@@ -111,7 +98,7 @@ export default function HeroVibrantEnergy({ salon }: { salon: Salon }) {
             {salon.address}, {salon.city}, NJ {salon.zip}
           </p>
         </div>
-      </div>
+      </motion.div>
 
       {/* Decorative vertical text on right */}
       <div className="hidden lg:flex absolute right-10 top-1/2 -translate-y-1/2 z-10 items-center gap-3"

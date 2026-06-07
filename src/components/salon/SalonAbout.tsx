@@ -1,23 +1,30 @@
+"use client"
+
 import Image from "next/image"
+import { motion } from "framer-motion"
 import type { Salon } from "@/data/salons"
+import { getSalonImages } from "@/data/salonImages"
+import { useLanguage, pick } from "@/contexts/LanguageContext"
 
 interface Props { salon: Salon }
 
-const aboutImages: Record<string, string> = {
-  hair: "https://images.unsplash.com/photo-1595476108010-b4d1f102b1b1?w=700&q=80&auto=format&fit=crop",
-  nails: "https://images.unsplash.com/photo-1632345031435-8727f592d8f9?w=700&q=80&auto=format&fit=crop",
-  full: "https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?w=700&q=80&auto=format&fit=crop",
-}
-
 export default function SalonAbout({ salon }: Props) {
-  const imgSrc = aboutImages[salon.type] ?? aboutImages.hair
+  const { t, lang } = useLanguage()
+  const { about: imgSrc } = getSalonImages(salon.slug)
 
   return (
     <section id="about" className="py-24 md:py-32 bg-[#1A1612]">
       <div className="max-w-7xl mx-auto px-6 md:px-10">
         <div className="grid md:grid-cols-2 gap-16 md:gap-24 items-center">
           {/* Image */}
-          <div className="relative h-80 md:h-[520px] overflow-hidden" style={{ borderRadius: "2px" }}>
+          <motion.div
+            className="relative h-80 md:h-[520px] overflow-hidden"
+            style={{ borderRadius: "2px" }}
+            initial={{ opacity: 0, scale: 1.04 }}
+            whileInView={{ opacity: 1, scale: 1 }}
+            viewport={{ once: true, amount: 0.3 }}
+            transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] as const }}
+          >
             <Image
               src={imgSrc}
               alt={`About ${salon.name}`}
@@ -27,28 +34,27 @@ export default function SalonAbout({ salon }: Props) {
             />
             {/* Accent color overlay strip */}
             <div className="absolute bottom-0 left-0 right-0 h-1" style={{ backgroundColor: salon.accentColor }} />
-          </div>
+          </motion.div>
 
           {/* Text */}
-          <div>
+          <motion.div
+            initial={{ opacity: 0, y: 16 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, amount: 0.3 }}
+            transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1] as const, delay: 0.1 }}
+          >
             <p className="text-xs font-medium tracking-widest uppercase mb-6"
               style={{ fontFamily: "var(--font-dm-sans)", color: salon.accentColor }}>
-              About / Nosotros
+              {t.aboutEyebrow}
             </p>
 
             <h2 className="headline-lg text-[#FAF7F4] mb-8" style={{ fontFamily: "var(--font-playfair)" }}>
               {salon.name}
             </h2>
 
-            <p className="text-base font-light text-[#A09A95] leading-relaxed mb-6"
+            <p key={lang} className="lang-fade-in text-base font-light text-[#A09A95] leading-relaxed mb-10"
               style={{ fontFamily: "var(--font-dm-sans)" }}>
-              Located in {salon.address}, {salon.city}, New Jersey — we're a neighborhood salon
-              committed to making every client feel seen, cared for, and beautiful.
-            </p>
-            <p className="text-sm italic text-[#7A746E] leading-relaxed mb-10"
-              style={{ fontFamily: "var(--font-cormorant)", fontSize: "1.1rem" }}>
-              Ubicados en {salon.city}, NJ — somos un salón de barrio comprometido con hacer que cada cliente
-              se sienta bien atendido/a y hermoso/a.
+              {t.aboutIntro(salon.city, salon.state)}
             </p>
 
             {/* Badges */}
@@ -72,7 +78,7 @@ export default function SalonAbout({ salon }: Props) {
               <div className="border-t border-[#2A2520] pt-8">
                 <p className="text-xs font-medium tracking-widest uppercase text-[#6B6560] mb-4"
                   style={{ fontFamily: "var(--font-dm-sans)" }}>
-                  Our Team
+                  {t.ourTeam}
                 </p>
                 <div className="flex flex-col gap-3">
                   {salon.team.map((member) => (
@@ -82,7 +88,7 @@ export default function SalonAbout({ salon }: Props) {
                       </span>
                       <span className="text-sm font-light text-[#6B6560] italic"
                         style={{ fontFamily: "var(--font-cormorant)", fontSize: "1rem" }}>
-                        {member.role}
+                        {pick(lang, member.role, member.roleEs)}
                       </span>
                     </div>
                   ))}
@@ -106,7 +112,7 @@ export default function SalonAbout({ salon }: Props) {
                 @{salon.instagram}
               </a>
             )}
-          </div>
+          </motion.div>
         </div>
       </div>
     </section>

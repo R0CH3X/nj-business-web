@@ -2,46 +2,24 @@
 // Template: SOFT BOUTIQUE — Brigith Nails, Amarilys, Salon Salvys
 // Feeling: boutique local con corazón — arco editorial, Cormorant italic grande, cream cálido, íntimo
 
-import { useEffect, useRef } from "react"
+import { motion } from "framer-motion"
 import Image from "next/image"
 import type { Salon } from "@/data/salons"
-
-const images: Record<string, string> = {
-  hair: "https://images.unsplash.com/photo-1519345182560-3f2917c472ef?w=800&q=85&auto=format&fit=crop",
-  nails: "https://images.unsplash.com/photo-1604654894610-df63bc536371?w=800&q=85&auto=format&fit=crop",
-  full: "https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?w=800&q=85&auto=format&fit=crop",
-}
+import { getSalonImages } from "@/data/salonImages"
+import { useLanguage, pick } from "@/contexts/LanguageContext"
 
 export default function HeroSoftBoutique({ salon }: { salon: Salon }) {
-  const imgRef = useRef<HTMLDivElement>(null)
-  const textRef = useRef<HTMLDivElement>(null)
-
-  useEffect(() => {
-    setTimeout(() => {
-      if (imgRef.current) {
-        imgRef.current.style.opacity = "1"
-        imgRef.current.style.transform = "scale(1)"
-      }
-    }, 100)
-    setTimeout(() => {
-      if (textRef.current) {
-        textRef.current.style.opacity = "1"
-        textRef.current.style.transform = "translateY(0)"
-      }
-    }, 300)
-  }, [])
+  const { t, lang } = useLanguage()
+  const { hero: imgSrc } = getSalonImages(salon.slug)
 
   return (
     <section className="min-h-screen bg-[#FDFAF7] flex flex-col md:flex-row overflow-hidden">
       {/* LEFT: Centered vertical text + branding */}
-      <div
-        ref={textRef}
+      <motion.div
         className="relative z-10 flex flex-col justify-between px-10 md:px-16 pt-28 pb-14 md:w-[48%] flex-shrink-0"
-        style={{
-          opacity: 0,
-          transform: "translateY(20px)",
-          transition: "opacity 0.8s ease, transform 0.8s ease",
-        }}
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.8, delay: 0.15, ease: [0.22, 1, 0.36, 1] }}
       >
         {/* Top: Salon name small */}
         <div>
@@ -55,6 +33,8 @@ export default function HeroSoftBoutique({ salon }: { salon: Salon }) {
 
           {/* Giant italic Cormorant headline — the centerpiece */}
           <h1
+            key={lang}
+            className="lang-fade-in"
             style={{
               fontFamily: "var(--font-cormorant)",
               fontSize: "clamp(3.5rem, 8vw, 6.5rem)",
@@ -65,16 +45,12 @@ export default function HeroSoftBoutique({ salon }: { salon: Salon }) {
               letterSpacing: "-0.02em",
             }}
           >
-            {salon.tagline}
+            {pick(lang, salon.tagline, salon.taglineEs)}
           </h1>
 
           {/* Accent underline decoration */}
           <div className="flex items-center gap-3 mt-6">
             <div className="h-0.5 w-16" style={{ backgroundColor: salon.accentColor }} />
-            <p className="text-sm italic font-light text-[#6B6560]"
-              style={{ fontFamily: "var(--font-cormorant)", fontSize: "1rem" }}>
-              {salon.taglineEs}
-            </p>
           </div>
         </div>
 
@@ -86,7 +62,7 @@ export default function HeroSoftBoutique({ salon }: { salon: Salon }) {
               <path d="M6 0l1.5 4.5H12l-3.75 2.7L9.75 12 6 9.3 2.25 12l1.5-4.8L0 4.5h4.5z" />
             </svg>
             <span className="text-sm font-medium" style={{ color: salon.accentColor, fontFamily: "var(--font-dm-sans)" }}>
-              {salon.rating} — {salon.reviewCount} reviews
+              {salon.rating} — {salon.reviewCount} {t.reviewsLabel}
             </span>
           </div>
           <div className="flex flex-wrap gap-2">
@@ -105,12 +81,12 @@ export default function HeroSoftBoutique({ salon }: { salon: Salon }) {
             <a href={`tel:${salon.phone}`}
               className="inline-flex items-center gap-2 px-7 py-3.5 text-sm font-medium text-white transition-opacity hover:opacity-90"
               style={{ backgroundColor: salon.accentColor, borderRadius: "30px", fontFamily: "var(--font-dm-sans)" }}>
-              Call Us · {salon.phoneFormatted}
+              {t.callUs} · {salon.phoneFormatted}
             </a>
             <a href="#services"
               className="inline-flex items-center gap-2 px-7 py-3.5 text-sm font-light border border-[#E2DDD9] text-[#6B6560] hover:border-[#1A1612] transition-colors"
               style={{ borderRadius: "30px", fontFamily: "var(--font-dm-sans)" }}>
-              See Services
+              {t.viewServices}
             </a>
           </div>
           <p className="text-xs text-[#9A9490] font-light"
@@ -118,23 +94,22 @@ export default function HeroSoftBoutique({ salon }: { salon: Salon }) {
             {salon.address}, {salon.city}, NJ · {salon.hours}
           </p>
         </div>
-      </div>
+      </motion.div>
 
       {/* RIGHT: Arched editorial photo */}
       <div className="relative flex-1 min-h-[50vh] md:min-h-0">
-        <div
-          ref={imgRef}
+        <motion.div
           className="absolute inset-4 md:inset-8"
+          initial={{ opacity: 0, scale: 1.04 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.9, delay: 0.05, ease: [0.22, 1, 0.36, 1] }}
           style={{
-            opacity: 0,
-            transform: "scale(1.04)",
-            transition: "opacity 0.9s ease, transform 0.9s ease",
             borderRadius: "200px 200px 16px 16px", // Arch top
             overflow: "hidden",
           }}
         >
           <Image
-            src={images[salon.type] ?? images.hair}
+            src={imgSrc}
             alt={salon.name}
             fill
             priority
@@ -144,7 +119,7 @@ export default function HeroSoftBoutique({ salon }: { salon: Salon }) {
           {/* Subtle accent tint at bottom */}
           <div className="absolute bottom-0 left-0 right-0 h-32"
             style={{ background: `linear-gradient(to top, ${salon.accentColor}30, transparent)` }} />
-        </div>
+        </motion.div>
       </div>
     </section>
   )

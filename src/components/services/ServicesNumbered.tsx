@@ -2,30 +2,28 @@
 // Style: NUMBERED — bold-editorial & dark-luxury templates
 // 01, 02, 03... números grandes en acento, lista expandida tipográfica
 
-import { useRef, useEffect } from "react"
+import { motion } from "framer-motion"
 import type { Salon } from "@/data/salons"
+import { useLanguage, pick } from "@/contexts/LanguageContext"
 
 interface Props { salon: Salon; dark?: boolean }
 
-export default function ServicesNumbered({ salon, dark = false }: Props) {
-  const sectionRef = useRef<HTMLElement>(null)
+const labelVariants = {
+  hidden: { opacity: 0, y: -10 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.5, ease: [0.22, 1, 0.36, 1] as const } },
+}
 
-  useEffect(() => {
-    const observer = new IntersectionObserver((entries) => {
-      entries.forEach((e) => {
-        if (e.isIntersecting) {
-          e.target.querySelectorAll(".svc-row").forEach((el, i) => {
-            setTimeout(() => {
-              (el as HTMLElement).style.opacity = "1"
-              ;(el as HTMLElement).style.transform = "translateY(0)"
-            }, i * 70)
-          })
-        }
-      })
-    }, { threshold: 0.1 })
-    if (sectionRef.current) observer.observe(sectionRef.current)
-    return () => observer.disconnect()
-  }, [])
+const rowVariants = {
+  hidden: { opacity: 0, y: 14 },
+  visible: (i: number) => ({
+    opacity: 1,
+    y: 0,
+    transition: { duration: 0.45, delay: i * 0.06, ease: [0.22, 1, 0.36, 1] as const },
+  }),
+}
+
+export default function ServicesNumbered({ salon, dark = false }: Props) {
+  const { t, lang } = useLanguage()
 
   const bg = dark ? "#0C0A12" : "#0A0907"
   const border = dark ? "#1A1625" : "#1A1714"
@@ -34,27 +32,34 @@ export default function ServicesNumbered({ salon, dark = false }: Props) {
   const subColor = dark ? "#5A5568" : "#5A5550"
 
   return (
-    <section id="services" ref={sectionRef} style={{ backgroundColor: bg }} className="py-24 md:py-32">
+    <section id="services" style={{ backgroundColor: bg }} className="py-24 md:py-32">
       <div className="max-w-5xl mx-auto px-8 md:px-14">
         {/* Section label */}
-        <div className="flex items-center gap-4 mb-16">
+        <motion.div
+          className="flex items-center gap-4 mb-16"
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, amount: 0.6 }}
+          variants={labelVariants}
+        >
           <p className="text-xs font-medium tracking-[0.3em] uppercase"
             style={{ color: numColor, fontFamily: "var(--font-dm-sans)" }}>
-            Services / Servicios
+            {t.servicesEyebrow} / {pick(lang, "Servicios", "Services")}
           </p>
           <div className="h-px flex-1" style={{ backgroundColor: border }} />
-        </div>
+        </motion.div>
 
         {/* Numbered list */}
         <div className="divide-y" style={{ borderColor: border }}>
           {salon.services.map((service, i) => (
-            <div key={service.name}
-              className="svc-row flex items-center gap-8 py-6 group cursor-default"
-              style={{
-                opacity: 0,
-                transform: "translateY(12px)",
-                transition: "opacity 0.4s ease, transform 0.4s ease",
-              }}>
+            <motion.div key={service.name}
+              className="flex items-center gap-8 py-6 group cursor-default"
+              custom={i}
+              initial="hidden"
+              whileInView="visible"
+              viewport={{ once: true, amount: 0.2 }}
+              variants={rowVariants}
+            >
               {/* Number */}
               <span
                 style={{
@@ -87,15 +92,15 @@ export default function ServicesNumbered({ salon, dark = false }: Props) {
               {/* Arrow on hover */}
               <span className="text-xl opacity-0 group-hover:opacity-100 transition-opacity"
                 style={{ color: numColor }}>→</span>
-            </div>
+            </motion.div>
           ))}
         </div>
 
         {/* CTA row */}
         <div className="mt-16 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6 pt-8"
           style={{ borderTop: `1px solid ${border}` }}>
-          <p className="text-sm font-light" style={{ color: subColor, fontFamily: "var(--font-dm-sans)" }}>
-            Questions? Give us a call. · ¿Preguntas? Llámanos.
+          <p key={lang} className="lang-fade-in text-sm font-light" style={{ color: subColor, fontFamily: "var(--font-dm-sans)" }}>
+            {t.servicesQuestion}
           </p>
           <a href={`tel:${salon.phone}`}
             className="inline-flex items-center gap-2 px-6 py-3 text-sm font-medium text-[#0A0907] transition-opacity hover:opacity-90"

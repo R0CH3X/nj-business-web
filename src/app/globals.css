@@ -80,3 +80,41 @@ body {
 img {
   transition: opacity 0.3s ease;
 }
+
+/* Bilingual crossfade — runs whenever the language toggle re-keys content */
+@keyframes lang-crossfade {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+.lang-fade-in {
+  animation: lang-crossfade 0.3s ease;
+}
+
+/* Subtle "Call Now" pulse — a single soft ring breath every few seconds, not a bouncy loop */
+@keyframes call-pulse-ring {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(0, 0, 0, 0); }
+  50% { box-shadow: 0 0 0 6px rgba(0, 0, 0, 0.06); }
+}
+.nav-call-pulse {
+  animation: call-pulse-ring 3.2s ease-in-out infinite;
+}
+
+/* WhatsApp glow — soft halo on hover, not a hard glare */
+.whatsapp-glow {
+  transition: box-shadow 0.35s ease, transform 0.35s ease;
+}
+.whatsapp-glow:hover {
+  box-shadow: 0 6px 24px -4px rgba(37, 211, 102, 0.45);
+  transform: translateY(-1px);
+}
+
+/* Scroll progress bar — driven by SalonNav */
+.scroll-progress {
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 2px;
+  z-index: 60;
+  transform-origin: left;
+  transition: transform 0.1s linear;
+}

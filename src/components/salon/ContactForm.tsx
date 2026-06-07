@@ -1,44 +1,67 @@
 "use client"
 
+import { useState } from "react"
+import { useLanguage } from "@/contexts/LanguageContext"
+
 interface Props { accentColor: string }
 
 export default function ContactForm({ accentColor }: Props) {
+  const { t } = useLanguage()
+  const [focused, setFocused] = useState<string | null>(null)
+
+  const fieldClass = (name: string) =>
+    `w-full px-4 py-3 bg-[#F0ECE8] border text-[#1A1612] text-sm font-light focus:outline-none transition-colors duration-200 ${
+      focused === name ? "" : "border-[#E2DDD9]"
+    }`
+
+  const fieldStyle = (name: string) => ({
+    fontFamily: "var(--font-dm-sans)",
+    borderRadius: "2px",
+    borderColor: focused === name ? accentColor : undefined,
+  })
+
   return (
     <form className="space-y-4" onSubmit={(e) => e.preventDefault()}>
       <div>
         <label className="block text-xs font-medium tracking-widest uppercase text-[#6B6560] mb-2"
           style={{ fontFamily: "var(--font-dm-sans)" }}>
-          Name / Nombre
+          {t.formName}
         </label>
         <input type="text"
-          className="w-full px-4 py-3 bg-[#F0ECE8] border border-[#E2DDD9] text-[#1A1612] text-sm font-light focus:outline-none focus:border-current transition-colors"
-          style={{ fontFamily: "var(--font-dm-sans)", borderRadius: "2px" }}
-          placeholder="Your name" />
+          className={fieldClass("name")}
+          style={fieldStyle("name")}
+          onFocus={() => setFocused("name")}
+          onBlur={() => setFocused(null)}
+          placeholder={t.formNamePlaceholder} />
       </div>
       <div>
         <label className="block text-xs font-medium tracking-widest uppercase text-[#6B6560] mb-2"
           style={{ fontFamily: "var(--font-dm-sans)" }}>
-          Phone / Teléfono
+          {t.formPhone}
         </label>
         <input type="tel"
-          className="w-full px-4 py-3 bg-[#F0ECE8] border border-[#E2DDD9] text-[#1A1612] text-sm font-light focus:outline-none focus:border-current transition-colors"
-          style={{ fontFamily: "var(--font-dm-sans)", borderRadius: "2px" }}
-          placeholder="(201) 000-0000" />
+          className={fieldClass("phone")}
+          style={fieldStyle("phone")}
+          onFocus={() => setFocused("phone")}
+          onBlur={() => setFocused(null)}
+          placeholder={t.formPhonePlaceholder} />
       </div>
       <div>
         <label className="block text-xs font-medium tracking-widest uppercase text-[#6B6560] mb-2"
           style={{ fontFamily: "var(--font-dm-sans)" }}>
-          Message / Mensaje
+          {t.formMessage}
         </label>
         <textarea rows={4}
-          className="w-full px-4 py-3 bg-[#F0ECE8] border border-[#E2DDD9] text-[#1A1612] text-sm font-light focus:outline-none focus:border-current transition-colors resize-none"
-          style={{ fontFamily: "var(--font-dm-sans)", borderRadius: "2px" }}
-          placeholder="What service are you interested in? / ¿Qué servicio te interesa?" />
+          className={`${fieldClass("message")} resize-none`}
+          style={fieldStyle("message")}
+          onFocus={() => setFocused("message")}
+          onBlur={() => setFocused(null)}
+          placeholder={t.formMessagePlaceholder} />
       </div>
       <button type="submit"
         className="w-full py-3.5 text-sm font-medium text-white transition-opacity hover:opacity-90"
         style={{ backgroundColor: accentColor, borderRadius: "3px", fontFamily: "var(--font-dm-sans)" }}>
-        Send Message / Enviar Mensaje
+        {t.formSubmit}
       </button>
     </form>
   )

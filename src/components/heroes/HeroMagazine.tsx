@@ -2,20 +2,15 @@
 // Template: MAGAZINE — Glamour By Marisol
 // Feeling: portada de revista de belleza independiente — collage, texto cruzado sobre foto, fuchsia bold
 
-import { useEffect, useRef } from "react"
+import { motion } from "framer-motion"
 import Image from "next/image"
 import type { Salon } from "@/data/salons"
+import { getSalonImages } from "@/data/salonImages"
+import { useLanguage, pick } from "@/contexts/LanguageContext"
 
 export default function HeroMagazine({ salon }: { salon: Salon }) {
-  const coverRef = useRef<HTMLDivElement>(null)
-
-  useEffect(() => {
-    setTimeout(() => {
-      if (coverRef.current) {
-        coverRef.current.style.opacity = "1"
-      }
-    }, 150)
-  }, [])
+  const { t, lang } = useLanguage()
+  const { hero: imgSrc } = getSalonImages(salon.slug)
 
   return (
     <section className="relative min-h-screen bg-[#FAF7F4] overflow-hidden">
@@ -33,22 +28,23 @@ export default function HeroMagazine({ salon }: { salon: Salon }) {
           </p>
         </div>
         <div className="text-right">
-          <p className="text-xs font-light text-[#6B6560]" style={{ fontFamily: "var(--font-dm-sans)" }}>
-            ★ {salon.rating} Perfect
+          <p key={lang} className="lang-fade-in text-xs font-light text-[#6B6560]" style={{ fontFamily: "var(--font-dm-sans)" }}>
+            ★ {salon.rating} {t.perfectRating}
           </p>
         </div>
       </div>
 
       {/* Magazine layout grid */}
-      <div
-        ref={coverRef}
+      <motion.div
         className="min-h-screen pt-16 grid md:grid-cols-12 md:grid-rows-1"
-        style={{ opacity: 0, transition: "opacity 0.8s ease" }}
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.8, delay: 0.1, ease: [0.22, 1, 0.36, 1] }}
       >
         {/* Main photo — takes columns 1-7 */}
         <div className="relative md:col-span-7 min-h-[50vh] md:min-h-screen">
           <Image
-            src="https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?w=900&q=85&auto=format&fit=crop"
+            src={imgSrc}
             alt={salon.name}
             fill
             priority
@@ -86,13 +82,15 @@ export default function HeroMagazine({ salon }: { salon: Salon }) {
                 style={{ backgroundColor: salon.accentColor, borderRadius: "2px" }}>
                 <span className="text-white text-xs font-bold">✦</span>
               </div>
-              <p className="text-xs font-medium tracking-widest uppercase text-[#6B6560]"
+              <p key={lang} className="lang-fade-in text-xs font-medium tracking-widest uppercase text-[#6B6560]"
                 style={{ fontFamily: "var(--font-dm-sans)" }}>
-                Color Correction Specialist
+                {pick(lang, "Color Correction Specialist", "Especialista en Corrección de Color")}
               </p>
             </div>
 
             <h1
+              key={lang}
+              className="lang-fade-in"
               style={{
                 fontFamily: "var(--font-playfair)",
                 fontSize: "clamp(2.5rem, 4vw, 3.5rem)",
@@ -102,12 +100,8 @@ export default function HeroMagazine({ salon }: { salon: Salon }) {
                 letterSpacing: "-0.02em",
               }}
             >
-              {salon.tagline}
+              {pick(lang, salon.tagline, salon.taglineEs)}
             </h1>
-            <p className="mt-4 italic text-[#6B6560]"
-              style={{ fontFamily: "var(--font-cormorant)", fontSize: "1.2rem" }}>
-              {salon.taglineEs}
-            </p>
 
             {/* Editorial pull quote */}
             <div className="my-10 pl-5 border-l-2" style={{ borderColor: salon.accentColor }}>
@@ -125,9 +119,9 @@ export default function HeroMagazine({ salon }: { salon: Salon }) {
                     <span className="font-medium text-[#1A1612]" style={{ fontFamily: "var(--font-dm-sans)" }}>
                       {m.name}
                     </span>
-                    <span className="text-sm italic text-[#6B6560]"
+                    <span key={lang} className="lang-fade-in text-sm italic text-[#6B6560]"
                       style={{ fontFamily: "var(--font-cormorant)", fontSize: "1rem" }}>
-                      {m.role}
+                      {pick(lang, m.role, m.roleEs)}
                     </span>
                   </div>
                 ))}
@@ -140,7 +134,7 @@ export default function HeroMagazine({ salon }: { salon: Salon }) {
               <a href={`tel:${salon.phone}`}
                 className="inline-flex items-center justify-center gap-2 py-3.5 text-sm font-medium text-white transition-opacity hover:opacity-90"
                 style={{ backgroundColor: salon.accentColor, borderRadius: "2px", fontFamily: "var(--font-dm-sans)" }}>
-                Book · {salon.phoneFormatted}
+                {pick(lang, "Book", "Reservar")} · {salon.phoneFormatted}
               </a>
               {salon.instagram && (
                 <a href={`https://instagram.com/${salon.instagram}`} target="_blank" rel="noopener noreferrer"
@@ -155,7 +149,7 @@ export default function HeroMagazine({ salon }: { salon: Salon }) {
             </p>
           </div>
         </div>
-      </div>
+      </motion.div>
     </section>
   )
 }

@@ -1,5 +1,6 @@
 import type { Metadata } from "next"
 import { Playfair_Display, DM_Sans, Cormorant_Garamond } from "next/font/google"
+import { LanguageProvider } from "@/contexts/LanguageContext"
 import "./globals.css"
 
 const playfair = Playfair_Display({
@@ -33,7 +34,9 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" className={`${playfair.variable} ${dmSans.variable} ${cormorant.variable} antialiased`}>
-      <body className="min-h-full bg-[#FAF7F4] text-[#1A1612] font-dm-sans">{children}</body>
+      <body className="min-h-full bg-[#FAF7F4] text-[#1A1612] font-dm-sans">
+        <LanguageProvider>{children}</LanguageProvider>
+      </body>
     </html>
   )
 }

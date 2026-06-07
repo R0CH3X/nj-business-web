@@ -2,27 +2,15 @@
 // Template: DARK LUXURY — NIKKI MAAR, VIP Beauty, Henry Castel
 // Feeling: salón de lujo en NYC, portrait dramático, texto a la derecha, oscuro toda la página
 
-import { useEffect, useRef } from "react"
+import { motion } from "framer-motion"
 import Image from "next/image"
 import type { Salon } from "@/data/salons"
-
-const portraits: Record<string, string> = {
-  hair: "https://images.unsplash.com/photo-1487412947147-5cebf100ffc2?w=700&q=85&auto=format&fit=crop&crop=top",
-  nails: "https://images.unsplash.com/photo-1604654894610-df63bc536371?w=700&q=85&auto=format&fit=crop",
-  full: "https://images.unsplash.com/photo-1580618864194-0cfe9b5e7d4f?w=700&q=85&auto=format&fit=crop&crop=top",
-}
+import { getSalonImages } from "@/data/salonImages"
+import { useLanguage, pick } from "@/contexts/LanguageContext"
 
 export default function HeroDarkLuxury({ salon }: { salon: Salon }) {
-  const textRef = useRef<HTMLDivElement>(null)
-
-  useEffect(() => {
-    const el = textRef.current
-    if (!el) return
-    setTimeout(() => {
-      el.style.opacity = "1"
-      el.style.transform = "translateX(0)"
-    }, 300)
-  }, [])
+  const { t, lang } = useLanguage()
+  const { hero: portraitSrc } = getSalonImages(salon.slug)
 
   // Accent-tinted dark: eg violet → very dark purple bg
   const darkBg = "#0C0A12"
@@ -35,7 +23,7 @@ export default function HeroDarkLuxury({ salon }: { salon: Salon }) {
       {/* LEFT: Portrait photo — takes 42% of screen, no gap, no border-radius */}
       <div className="hidden md:block relative w-[42%] h-screen flex-shrink-0">
         <Image
-          src={portraits[salon.type] ?? portraits.hair}
+          src={portraitSrc}
           alt={salon.name}
           fill
           priority
@@ -53,7 +41,7 @@ export default function HeroDarkLuxury({ salon }: { salon: Salon }) {
       {/* Mobile photo — full bleed top, text below */}
       <div className="md:hidden absolute inset-0">
         <Image
-          src={portraits[salon.type] ?? portraits.hair}
+          src={portraitSrc}
           alt={salon.name}
           fill
           priority
@@ -65,14 +53,11 @@ export default function HeroDarkLuxury({ salon }: { salon: Salon }) {
       </div>
 
       {/* RIGHT: Text content */}
-      <div
-        ref={textRef}
+      <motion.div
         className="relative z-10 flex-1 flex flex-col justify-center px-10 md:px-14 pt-24 md:pt-0 pb-12 mt-auto md:mt-0"
-        style={{
-          opacity: 0,
-          transform: "translateX(24px)",
-          transition: "opacity 0.8s ease, transform 0.8s ease",
-        }}
+        initial={{ opacity: 0, x: 24 }}
+        animate={{ opacity: 1, x: 0 }}
+        transition={{ duration: 0.8, delay: 0.2, ease: [0.22, 1, 0.36, 1] }}
       >
         {/* Salon name — small caps, spaced */}
         <p className="text-xs font-medium tracking-[0.3em] uppercase mb-8"
@@ -82,6 +67,8 @@ export default function HeroDarkLuxury({ salon }: { salon: Salon }) {
 
         {/* Main headline in Cormorant at large size */}
         <h1
+          key={lang}
+          className="lang-fade-in"
           style={{
             fontFamily: "var(--font-cormorant)",
             fontSize: "clamp(3rem, 6vw, 5.5rem)",
@@ -92,20 +79,14 @@ export default function HeroDarkLuxury({ salon }: { salon: Salon }) {
             letterSpacing: "-0.02em",
           }}
         >
-          {salon.tagline}
+          {pick(lang, salon.tagline, salon.taglineEs)}
         </h1>
-
-        {/* Spanish */}
-        <p className="mt-4 text-base font-light"
-          style={{ color: "#6B6560", fontFamily: "var(--font-dm-sans)" }}>
-          {salon.taglineEs}
-        </p>
 
         {/* Divider line + rating */}
         <div className="flex items-center gap-4 mt-10 mb-10">
           <div className="h-px flex-1 max-w-[60px]" style={{ backgroundColor: salon.accentColor }} />
           <span className="text-sm font-light" style={{ color: "#6B6560", fontFamily: "var(--font-dm-sans)" }}>
-            ★ {salon.rating} · {salon.reviewCount} reviews
+            ★ {salon.rating} · {salon.reviewCount} {t.reviewsLabel}
           </span>
         </div>
 
@@ -139,13 +120,13 @@ export default function HeroDarkLuxury({ salon }: { salon: Salon }) {
             <a href={salon.booking} target="_blank" rel="noopener noreferrer"
               className="inline-flex items-center gap-2 px-7 py-3.5 text-sm font-medium border transition-colors hover:border-[#6B6560]"
               style={{ borderColor: "#2A2333", color: "#A09A95", borderRadius: "2px", fontFamily: "var(--font-dm-sans)" }}>
-              Book Online
+              {t.bookOnline}
             </a>
           )}
           <a href="#services"
             className="inline-flex items-center gap-2 px-7 py-3.5 text-sm font-medium border transition-colors hover:border-[#6B6560]"
             style={{ borderColor: "#2A2333", color: "#A09A95", borderRadius: "2px", fontFamily: "var(--font-dm-sans)" }}>
-            Services ↓
+            {t.navServices} ↓
           </a>
         </div>
 
@@ -154,7 +135,7 @@ export default function HeroDarkLuxury({ salon }: { salon: Salon }) {
           style={{ fontFamily: "var(--font-dm-sans)" }}>
           {salon.address} · {salon.city}, NJ · {salon.hours}
         </p>
-      </div>
+      </motion.div>
     </section>
   )
 }

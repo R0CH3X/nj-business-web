@@ -16,6 +16,13 @@ interface Dictionary {
   callNow: string
   // Hero / shared CTAs
   bookNow: string
+  bookOnline: string
+  viewServices: string
+  callUs: string
+  explore: string
+  statRating: string
+  statReviews: string
+  statServices: string
   call: string
   whatsapp: string
   reviewsLabel: string
@@ -28,7 +35,7 @@ interface Dictionary {
   // Gallery
   galleryEyebrow: string
   galleryHeadline: string
-  galleryCaption: string
+  galleryCaption: (city: string) => string
   // Reviews
   reviewsEyebrow: string
   reviewsHeadline: string
@@ -72,6 +79,13 @@ const dictionaries: Record<Lang, Dictionary> = {
     navContact: "Contact",
     callNow: "Call Now",
     bookNow: "Book Now",
+    bookOnline: "Book Online",
+    viewServices: "Our Services",
+    callUs: "Call Us",
+    explore: "Explore",
+    statRating: "Rating",
+    statReviews: "Reviews",
+    statServices: "Services",
     call: "Call",
     whatsapp: "WhatsApp",
     reviewsLabel: "reviews",
@@ -88,7 +102,7 @@ const dictionaries: Record<Lang, Dictionary> = {
     verifiedReviews: "verified reviews",
     basedOnGoogle: "Based on Google Reviews",
     aboutEyebrow: "About",
-    aboutIntro: (city, state) =>
+    aboutIntro: (city: string, state: string) =>
       `Located in ${city}, ${state} — we're a neighborhood salon committed to making every client feel seen, cared for, and beautiful.`,
     ourTeam: "Our Team",
     contactEyebrow: "Contact",
@@ -119,6 +133,13 @@ const dictionaries: Record<Lang, Dictionary> = {
     navContact: "Contacto",
     callNow: "Llamar Ahora",
     bookNow: "Reservar Ahora",
+    bookOnline: "Reservar en línea",
+    viewServices: "Nuestros Servicios",
+    callUs: "Llámanos",
+    explore: "Explorar",
+    statRating: "Calificación",
+    statReviews: "Reseñas",
+    statServices: "Servicios",
     call: "Llamar",
     whatsapp: "WhatsApp",
     reviewsLabel: "reseñas",
@@ -135,7 +156,7 @@ const dictionaries: Record<Lang, Dictionary> = {
     verifiedReviews: "reseñas verificadas",
     basedOnGoogle: "Basado en Reseñas de Google",
     aboutEyebrow: "Nosotros",
-    aboutIntro: (city, state) =>
+    aboutIntro: (city: string, state: string) =>
       `Ubicados en ${city}, ${state} — somos un salón de barrio comprometido en hacer que cada cliente se sienta visto, cuidado y hermoso.`,
     ourTeam: "Nuestro Equipo",
     contactEyebrow: "Contacto",

@@ -1,17 +1,22 @@
+"use client"
+
 import Link from "next/link"
 import type { Salon } from "@/data/salons"
+import { useLanguage, pick } from "@/contexts/LanguageContext"
 
 interface Props { salon: Salon }
 
-const footerLinks = [
-  { label: "Services", href: "#services" },
-  { label: "Gallery", href: "#gallery" },
-  { label: "Reviews", href: "#reviews" },
-  { label: "About", href: "#about" },
-  { label: "Contact", href: "#contact" },
-]
-
 export default function SalonFooter({ salon }: Props) {
+  const { t, lang } = useLanguage()
+
+  const footerLinks = [
+    { label: t.navServices, href: "#services" },
+    { label: t.navGallery, href: "#gallery" },
+    { label: t.navReviews, href: "#reviews" },
+    { label: t.navAbout, href: "#about" },
+    { label: t.navContact, href: "#contact" },
+  ]
+
   return (
     <footer className="bg-[#1A1612] text-[#FAF7F4] py-16 px-6 md:px-10">
       <div className="max-w-7xl mx-auto">
@@ -21,9 +26,9 @@ export default function SalonFooter({ salon }: Props) {
             <p className="font-bold text-xl mb-3" style={{ fontFamily: "var(--font-playfair)" }}>
               {salon.name}
             </p>
-            <p className="text-sm font-light text-[#7A746E] leading-relaxed italic mb-6"
+            <p key={lang} className="lang-fade-in text-sm font-light text-[#7A746E] leading-relaxed italic mb-6"
               style={{ fontFamily: "var(--font-cormorant)", fontSize: "1rem" }}>
-              {salon.tagline}
+              {pick(lang, salon.tagline, salon.taglineEs)}
             </p>
             <div className="flex gap-3">
               {salon.instagram && (
@@ -51,16 +56,21 @@ export default function SalonFooter({ salon }: Props) {
           <div>
             <p className="text-xs font-medium tracking-widest uppercase text-[#7A746E] mb-5"
               style={{ fontFamily: "var(--font-dm-sans)" }}>
-              Navigate
+              {t.footerNavigate}
             </p>
             <ul className="space-y-3">
               {footerLinks.map((link) => (
-                <li key={link.href}>
+                <li key={link.href} className="relative group inline-block">
                   <a href={link.href}
-                    className="text-sm font-light text-[#A09A95] hover:text-[#FAF7F4] transition-colors"
+                    className="text-sm font-light text-[#A09A95] hover:text-[#FAF7F4] transition-colors duration-200"
                     style={{ fontFamily: "var(--font-dm-sans)" }}>
                     {link.label}
                   </a>
+                  <span
+                    className="absolute -bottom-0.5 left-0 h-px w-0 transition-all duration-300 ease-out group-hover:w-full"
+                    style={{ backgroundColor: salon.accentColor }}
+                    aria-hidden
+                  />
                 </li>
               ))}
             </ul>
@@ -70,7 +80,7 @@ export default function SalonFooter({ salon }: Props) {
           <div>
             <p className="text-xs font-medium tracking-widest uppercase text-[#7A746E] mb-5"
               style={{ fontFamily: "var(--font-dm-sans)" }}>
-              Visit Us
+              {t.footerVisitUs}
             </p>
             <address className="not-italic space-y-2 text-sm font-light text-[#A09A95]"
               style={{ fontFamily: "var(--font-dm-sans)" }}>
@@ -92,7 +102,7 @@ export default function SalonFooter({ salon }: Props) {
             © {new Date().getFullYear()} {salon.name}. {salon.city}, NJ.
           </p>
           <p className="text-xs font-light text-[#4A4540]" style={{ fontFamily: "var(--font-dm-sans)" }}>
-            Part of{" "}
+            {t.footerPartOf}{" "}
             <Link href="/" className="hover:text-[#6B6560] transition-colors">
               NJ Business Web
             </Link>

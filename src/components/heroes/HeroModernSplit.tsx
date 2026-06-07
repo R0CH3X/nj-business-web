@@ -2,40 +2,25 @@
 // Template: MODERN SPLIT — Fina Salon, Divino Niño
 // Feeling: arquitectónico, geométrico, 50/50 perfecto, panel de color sólido izquierda, foto derecha
 
-import { useEffect, useRef } from "react"
+import { motion } from "framer-motion"
 import Image from "next/image"
 import type { Salon } from "@/data/salons"
-
-const images: Record<string, string> = {
-  hair: "https://images.unsplash.com/photo-1562322140-8baeececf3df?w=900&q=85&auto=format&fit=crop",
-  nails: "https://images.unsplash.com/photo-1632345031435-8727f592d8f9?w=900&q=85&auto=format&fit=crop",
-  full: "https://images.unsplash.com/photo-1595476108010-b4d1f102b1b1?w=900&q=85&auto=format&fit=crop",
-}
+import { getSalonImages } from "@/data/salonImages"
+import { useLanguage, pick } from "@/contexts/LanguageContext"
 
 export default function HeroModernSplit({ salon }: { salon: Salon }) {
-  const leftRef = useRef<HTMLDivElement>(null)
-  const rightRef = useRef<HTMLDivElement>(null)
-
-  useEffect(() => {
-    setTimeout(() => {
-      if (leftRef.current) leftRef.current.style.opacity = "1"
-    }, 100)
-    setTimeout(() => {
-      if (rightRef.current) rightRef.current.style.opacity = "1"
-    }, 350)
-  }, [])
+  const { t, lang } = useLanguage()
+  const { hero: imgSrc } = getSalonImages(salon.slug)
 
   return (
     <section className="min-h-screen flex flex-col md:flex-row overflow-hidden">
       {/* LEFT panel: accent-light bg or white with strong accent typography */}
-      <div
-        ref={leftRef}
+      <motion.div
         className="relative flex flex-col justify-between px-10 md:px-14 pt-24 md:pt-0 pb-12 md:py-0 md:justify-center md:w-1/2"
-        style={{
-          backgroundColor: salon.accentLight,
-          opacity: 0,
-          transition: "opacity 0.7s ease",
-        }}
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
+        style={{ backgroundColor: salon.accentLight }}
       >
         {/* Top nav placeholder area */}
         <div className="md:absolute md:top-10 md:left-14 mb-8 md:mb-0">
@@ -65,13 +50,9 @@ export default function HeroModernSplit({ salon }: { salon: Salon }) {
           </div>
 
           {/* Tagline */}
-          <p className="text-lg font-light text-[#6B6560] mb-2 leading-snug max-w-xs"
+          <p key={lang} className="lang-fade-in text-lg font-light text-[#6B6560] mb-10 leading-snug max-w-xs"
             style={{ fontFamily: "var(--font-dm-sans)" }}>
-            {salon.tagline}
-          </p>
-          <p className="text-sm italic text-[#8A8480] mb-10"
-            style={{ fontFamily: "var(--font-cormorant)", fontSize: "1rem" }}>
-            {salon.taglineEs}
+            {pick(lang, salon.tagline, salon.taglineEs)}
           </p>
 
           {/* Stats row */}
@@ -81,7 +62,7 @@ export default function HeroModernSplit({ salon }: { salon: Salon }) {
                 {salon.rating}
               </p>
               <p className="text-xs text-[#6B6560] mt-1" style={{ fontFamily: "var(--font-dm-sans)" }}>
-                Rating
+                {t.statRating}
               </p>
             </div>
             <div className="w-px bg-[#E2DDD9]" />
@@ -90,7 +71,7 @@ export default function HeroModernSplit({ salon }: { salon: Salon }) {
                 {salon.reviewCount}
               </p>
               <p className="text-xs text-[#6B6560] mt-1" style={{ fontFamily: "var(--font-dm-sans)" }}>
-                Reviews
+                {t.statReviews}
               </p>
             </div>
             <div className="w-px bg-[#E2DDD9]" />
@@ -99,7 +80,7 @@ export default function HeroModernSplit({ salon }: { salon: Salon }) {
                 {salon.services.length}
               </p>
               <p className="text-xs text-[#6B6560] mt-1" style={{ fontFamily: "var(--font-dm-sans)" }}>
-                Services
+                {t.statServices}
               </p>
             </div>
           </div>
@@ -114,7 +95,7 @@ export default function HeroModernSplit({ salon }: { salon: Salon }) {
             <a href="#services"
               className="inline-flex items-center gap-2 px-6 py-3.5 text-sm font-medium text-[#1A1612] border border-[#1A1612]/20 hover:border-[#1A1612] transition-colors"
               style={{ borderRadius: "3px", fontFamily: "var(--font-dm-sans)" }}>
-              Explore ↓
+              {t.explore} ↓
             </a>
           </div>
         </div>
@@ -124,16 +105,17 @@ export default function HeroModernSplit({ salon }: { salon: Salon }) {
           style={{ fontFamily: "var(--font-dm-sans)" }}>
           {salon.address} · {salon.hours}
         </p>
-      </div>
+      </motion.div>
 
       {/* RIGHT: Full-bleed photo, zero padding */}
-      <div
-        ref={rightRef}
+      <motion.div
         className="relative min-h-[50vh] md:min-h-0 md:flex-1"
-        style={{ opacity: 0, transition: "opacity 0.9s ease" }}
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.9, delay: 0.2, ease: [0.22, 1, 0.36, 1] }}
       >
         <Image
-          src={images[salon.type] ?? images.hair}
+          src={imgSrc}
           alt={salon.name}
           fill
           priority
@@ -150,7 +132,7 @@ export default function HeroModernSplit({ salon }: { salon: Salon }) {
             Google
           </span>
         </div>
-      </div>
+      </motion.div>
     </section>
   )
 }
