@@ -2,9 +2,21 @@ import Link from "next/link"
 import type { Metadata } from "next"
 import { salons } from "@/data/salons"
 
+const SITE_URL = "https://nj-business-web.netlify.app"
+const TITLE = "NJ Beauty Salons — West New York, Guttenberg, North Bergen & Union City"
+const DESCRIPTION = "Find the best beauty salons in Hudson County, NJ. Expert hair, nails & full-service salons in West New York, Guttenberg, North Bergen, and Union City."
+
 export const metadata: Metadata = {
-  title: "NJ Beauty Salons — West New York, Guttenberg, North Bergen & Union City",
-  description: "Find the best beauty salons in Hudson County, NJ. Expert hair, nails & full-service salons in West New York, Guttenberg, North Bergen, and Union City.",
+  title: TITLE,
+  description: DESCRIPTION,
+  alternates: { canonical: SITE_URL },
+  openGraph: {
+    title: TITLE,
+    description: DESCRIPTION,
+    url: SITE_URL,
+    type: "website",
+    locale: "en_US",
+  },
 }
 
 const cities = ["West New York", "Guttenberg", "North Bergen", "Union City"]

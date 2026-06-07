@@ -89,7 +89,7 @@ export default function SalonNav({ salon }: Props) {
         {/* Mobile hamburger */}
         <button
           onClick={() => setOpen(!open)}
-          className="md:hidden flex flex-col gap-1.5 p-2"
+          className="md:hidden flex flex-col gap-1.5 p-2.5 -mr-2.5"
           aria-label="Toggle menu"
         >
           <span className={`block w-6 h-px bg-[#1A1612] transition-all duration-200 ${open ? "rotate-45 translate-y-2" : ""}`} />

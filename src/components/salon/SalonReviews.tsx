@@ -65,12 +65,12 @@ export default function SalonReviews({ salon }: Props) {
         </h2>
       </motion.div>
 
-      {/* Review cards */}
-      <div className="grid md:grid-cols-3 gap-6">
+      {/* Review cards — horizontal snap-scroll carousel on mobile, grid on desktop */}
+      <div className="flex md:grid md:grid-cols-3 gap-6 overflow-x-auto md:overflow-visible snap-x snap-mandatory -mx-6 px-6 md:mx-0 md:px-0 pb-2 md:pb-0 scrollbar-hide">
         {salon.reviews.map((review, i) => (
           <motion.div
             key={i}
-            className="review-card p-8 bg-[#F0ECE8]"
+            className="review-card p-8 bg-[#F0ECE8] flex-none w-[82vw] sm:w-[60vw] md:w-auto snap-start"
             style={{ borderRadius: "2px" }}
             custom={i}
             initial="hidden"

@@ -103,7 +103,7 @@ const dictionaries: Record<Lang, Dictionary> = {
     basedOnGoogle: "Based on Google Reviews",
     aboutEyebrow: "About",
     aboutIntro: (city: string, state: string) =>
-      `Located in ${city}, ${state} — we're a neighborhood salon committed to making every client feel seen, cared for, and beautiful.`,
+      `We're a neighborhood salon in ${city}, ${state}. Walk in as a stranger, leave as a regular.`,
     ourTeam: "Our Team",
     contactEyebrow: "Contact",
     contactHeadline: "Come visit us.",
@@ -157,7 +157,7 @@ const dictionaries: Record<Lang, Dictionary> = {
     basedOnGoogle: "Basado en Reseñas de Google",
     aboutEyebrow: "Nosotros",
     aboutIntro: (city: string, state: string) =>
-      `Ubicados en ${city}, ${state} — somos un salón de barrio comprometido en hacer que cada cliente se sienta visto, cuidado y hermoso.`,
+      `Somos un salón de barrio en ${city}, ${state}. Llegas como cliente y te vas como familia.`,
     ourTeam: "Nuestro Equipo",
     contactEyebrow: "Contacto",
     contactHeadline: "Ven a visitarnos.",

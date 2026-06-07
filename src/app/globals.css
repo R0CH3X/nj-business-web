@@ -61,6 +61,15 @@ body {
   line-height: 1.5;
 }
 
+/* Hide scrollbar for horizontal snap-scroll carousels (mobile reviews/gallery) */
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
 /* Mobile sticky CTA bar — hidden on desktop */
 .mobile-cta-bar {
   position: fixed;
