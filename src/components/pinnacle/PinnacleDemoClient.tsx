@@ -20,9 +20,9 @@ const EXPO_OUT = [0.16, 1, 0.3, 1] as const
 const IMG = {
   heroBg: "https://images.pexels.com/photos/8486944/pexels-photo-8486944.jpeg?auto=compress&w=1600",
   emergency: "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=400&q=80",
-  sewer: "https://images.unsplash.com/photo-1504307651254-35680f356dfd?w=400&q=80",
+  sewer: "https://images.pexels.com/photos/8853502/pexels-photo-8853502.jpeg?auto=compress&w=400",
   drain: "https://images.unsplash.com/photo-1581578731548-c64695cc6952?w=400&q=80",
-  waterHeater: "https://images.unsplash.com/photo-1587145820266-a5951ee6f620?w=400&q=80",
+  waterHeater: "https://images.pexels.com/photos/6419128/pexels-photo-6419128.jpeg?auto=compress&w=400",
   pipeRepair: "https://images.unsplash.com/photo-1607472586893-edb57bdc0e39?w=400&q=80",
   leakDetection: "https://images.unsplash.com/photo-1565193566173-7a0ee3dbe261?w=400&q=80",
   about: "https://images.unsplash.com/photo-1621905251189-08b45d6a269e?w=800&q=80",
@@ -519,8 +519,8 @@ export default function PinnacleDemoClient() {
 
             {/* Badge */}
             <motion.div
-              initial={{ opacity: 0, y: 12 }}
-              animate={{ opacity: 1, y: 0 }}
+              initial={{ y: 12 }}
+              animate={{ y: 0 }}
               transition={{ duration: 0.5, delay: 0.1, ease: EXPO_OUT }}
               style={{
                 display: "inline-flex", alignItems: "center", gap: "10px",
@@ -545,8 +545,8 @@ export default function PinnacleDemoClient() {
               {d.hero.words.map((word, i) => (
                 <motion.span
                   key={i}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
+                  initial={{ y: 20 }}
+                  animate={{ y: 0 }}
                   transition={{ duration: 0.55, delay: 0.25 + i * 0.08, ease: EXPO_OUT }}
                   style={{
                     display: "inline-block",
@@ -561,9 +561,9 @@ export default function PinnacleDemoClient() {
 
             {/* Subheadline */}
             <motion.p
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ duration: 0.7, delay: 0.6 }}
+              initial={{ y: 8 }}
+              animate={{ y: 0 }}
+              transition={{ duration: 0.6, delay: 0.5, ease: EXPO_OUT }}
               style={{
                 fontSize: "clamp(14px, 1.4vw, 17px)", color: C.secondary,
                 lineHeight: 1.7, marginBottom: "48px",
@@ -575,8 +575,8 @@ export default function PinnacleDemoClient() {
 
             {/* CTAs */}
             <motion.div
-              initial={{ opacity: 0, y: 12 }}
-              animate={{ opacity: 1, y: 0 }}
+              initial={{ y: 12 }}
+              animate={{ y: 0 }}
               transition={{ duration: 0.6, delay: 0.75, ease: EXPO_OUT }}
               style={{ display: "flex", gap: "12px", flexWrap: "wrap" }}
             >
