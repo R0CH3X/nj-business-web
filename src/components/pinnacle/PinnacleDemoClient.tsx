@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect, useRef } from "react"
-import { motion, AnimatePresence } from "framer-motion"
+import { motion, AnimatePresence, useInView, useMotionValue, animate } from "framer-motion"
 
 // ─── Design tokens ─────────────────────────────────────────────────────────────
 const C = {
@@ -186,46 +186,24 @@ type Lang = keyof typeof content
 
 function Counter({ end, suffix, decimal = false }: { end: number; suffix: string; decimal?: boolean }) {
   const ref = useRef<HTMLSpanElement>(null)
-  const [val, setVal] = useState(0)
-  const timerId = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const inView = useInView(ref, { once: true, amount: 0.3 })
+  const count = useMotionValue(0)
+  const [display, setDisplay] = useState(decimal ? "0.0" : "0")
 
   useEffect(() => {
-    const el = ref.current
-    if (!el) return
-    let started = false
-
-    const runAnim = () => {
-      started = true
-      const dur = 1800
-      const t0 = Date.now()
-      const tick = () => {
-        const p = Math.min((Date.now() - t0) / dur, 1)
-        const e = 1 - Math.pow(1 - p, 4) // quart out
-        setVal(e * end)
-        if (p < 1) timerId.current = setTimeout(tick, 16)
-        else setVal(end)
-      }
-      tick()
-    }
-
-    const poll = () => {
-      if (started) return
-      const rect = el.getBoundingClientRect()
-      if (rect.top < window.innerHeight && rect.bottom > 0) {
-        runAnim()
-      } else {
-        timerId.current = setTimeout(poll, 150)
-      }
-    }
-    poll()
-
-    return () => { if (timerId.current) clearTimeout(timerId.current) }
-  }, [end])
+    if (!inView) return
+    const controls = animate(count, end, {
+      duration: 1.8,
+      ease: [0.16, 1, 0.3, 1],
+      onUpdate(latest) {
+        setDisplay(decimal ? latest.toFixed(1) : String(Math.floor(latest)))
+      },
+    })
+    return () => controls.stop()
+  }, [inView, count, end, decimal])
 
   return (
-    <span ref={ref}>
-      {decimal ? val.toFixed(1) : Math.floor(val)}{suffix}
-    </span>
+    <span ref={ref}>{display}{suffix}</span>
   )
 }
 
