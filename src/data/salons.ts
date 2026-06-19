@@ -35,6 +35,8 @@ export interface Salon {
   seoDescriptionEs: string
   keywords: string[]
   type: 'hair' | 'nails' | 'full'
+  /** JSON-LD @type — defaults to "BeautySalon" if omitted */
+  schemaType?: string
 }
 
 export interface Service {
@@ -524,6 +526,7 @@ export const salons: Salon[] = [
       { text: "Un ambiente acogedor, el trabajo es impecable. Cuando uno ama lo que hace se nota.", author: "Cliente verificada", rating: 5 },
     ],
   },
+
 ]
 
 export function getSalonBySlug(slug: string): Salon | undefined {
