@@ -1,360 +1,458 @@
 "use client"
 
 import { useState, useEffect, useRef } from "react"
-import { motion, useInView, useMotionValue, animate, AnimatePresence } from "framer-motion"
+import { motion, useInView, useMotionValue, animate } from "framer-motion"
 
-// ─── Three/Ember Design System ────────────────────────────────────────────────
-const C = {
-  canvas:  "#111111",
-  card:    "#181818",
-  panel:   "#2b2a2a",
-  border:  "#343434",
-  text:    "#ffffff",
-  sec:     "#999999",
-  ter:     "#8d8d8d",
-  ember:   "#ff4300",
-} as const
+// ─── Video URLs (Higgsfield cinematic_studio_video_v2) ────────────────────────
+const HERO_VIDEO     = "https://d8j0ntlcm91z4.cloudfront.net/user_3FQadVcSPbghpSFvkjgD2Hf8Alt/hf_20260622_044841_aad60d03-18aa-44d2-b486-94caa4e83a81.mp4"
+const SERVICES_VIDEO = "https://d8j0ntlcm91z4.cloudfront.net/user_3FQadVcSPbghpSFvkjgD2Hf8Alt/hf_20260622_044845_e75e5f54-ec77-4365-a0a7-5c1653b3d794.mp4"
 
-// Tracking: -0.056em @ 68px headlines, -0.025em @ 46-48px
+// ─── Design tokens ────────────────────────────────────────────────────────────
+const ACCENT  = "#ff4300"
+const CANVAS  = "#111111"
+const WA_URL  = "https://wa.me/12015550100"
+const CALL_URL = "tel:+12015550100"
+
+// ─── FadingVideo (rAF-driven) ─────────────────────────────────────────────────
+const FADE_MS = 500
+const FADE_OUT_LEAD = 0.55
+
+function FadingVideo({ src, className, style }: { src: string; className?: string; style?: React.CSSProperties }) {
+  const videoRef    = useRef<HTMLVideoElement>(null)
+  const rafRef      = useRef<number>(0)
+  const fadingOutRef = useRef(false)
+
+  function fadeTo(target: number) {
+    cancelAnimationFrame(rafRef.current)
+    const video = videoRef.current
+    if (!video) return
+    const start = performance.now()
+    const from  = parseFloat(video.style.opacity) || 0
+    function step(now: number) {
+      const p = Math.min((now - start) / FADE_MS, 1)
+      video!.style.opacity = String(from + (target - from) * p)
+      if (p < 1) rafRef.current = requestAnimationFrame(step)
+    }
+    rafRef.current = requestAnimationFrame(step)
+  }
+
+  useEffect(() => {
+    const video = videoRef.current
+    if (!video) return
+    video.style.opacity = "0"
+    const onLoaded     = () => { video.play(); fadeTo(1) }
+    const onTimeUpdate = () => {
+      if (!fadingOutRef.current &&
+          video.duration - video.currentTime <= FADE_OUT_LEAD &&
+          video.duration - video.currentTime > 0) {
+        fadingOutRef.current = true
+        fadeTo(0)
+      }
+    }
+    const onEnded = () => {
+      video.style.opacity = "0"
+      setTimeout(() => {
+        video.currentTime = 0
+        video.play()
+        fadingOutRef.current = false
+        fadeTo(1)
+      }, 100)
+    }
+    video.addEventListener("loadeddata", onLoaded)
+    video.addEventListener("timeupdate", onTimeUpdate)
+    video.addEventListener("ended", onEnded)
+    return () => {
+      cancelAnimationFrame(rafRef.current)
+      video.removeEventListener("loadeddata", onLoaded)
+      video.removeEventListener("timeupdate", onTimeUpdate)
+      video.removeEventListener("ended", onEnded)
+    }
+  }, [src])
+
+  return (
+    <video ref={videoRef} src={src} autoPlay muted playsInline preload="auto" loop={false}
+      className={className} style={{ opacity: 0, ...style }} />
+  )
+}
+
+// ─── BlurText ─────────────────────────────────────────────────────────────────
+function BlurText({ text, className, style }: { text: string; className?: string; style?: React.CSSProperties }) {
+  const ref = useRef<HTMLParagraphElement>(null)
+  const [visible, setVisible] = useState(false)
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => { if (entry.isIntersecting) setVisible(true) },
+      { threshold: 0.1 }
+    )
+    if (ref.current) observer.observe(ref.current)
+    return () => observer.disconnect()
+  }, [])
+  const words = text.split(" ")
+  return (
+    <p ref={ref} className={className}
+      style={{ display: "flex", flexWrap: "wrap", justifyContent: "center", rowGap: "0.1em", ...style }}>
+      {words.map((word, i) => (
+        <motion.span key={i}
+          initial={{ filter: "blur(10px)", opacity: 0, y: 50 }}
+          animate={visible ? { filter: ["blur(10px)", "blur(5px)", "blur(0px)"], opacity: [0, 0.5, 1], y: [50, -5, 0] } : {}}
+          transition={{ duration: 0.7, times: [0, 0.5, 1], ease: "easeOut", delay: (i * 100) / 1000 }}
+          style={{ display: "inline-block", marginRight: "0.28em" }}
+        >{word}</motion.span>
+      ))}
+    </p>
+  )
+}
+
+// ─── Counter ─────────────────────────────────────────────────────────────────
 const EXPO = [0.16, 1, 0.3, 1] as const
-
-const IMG = {
-  hero:    "https://images.pexels.com/photos/14319099/pexels-photo-14319099.jpeg?auto=compress&w=1600",
-  panel:   "https://images.pexels.com/photos/5767595/pexels-photo-5767595.jpeg?auto=compress&w=600",
-  ev:      "https://images.pexels.com/photos/27355826/pexels-photo-27355826.jpeg?auto=compress&w=600",
-  emrg:    "https://images.pexels.com/photos/257736/pexels-photo-257736.jpeg?auto=compress&w=600",
-  light:   "https://images.pexels.com/photos/32391477/pexels-photo-32391477.jpeg?auto=compress&w=600",
-  rewire:  "https://images.pexels.com/photos/5691588/pexels-photo-5691588.jpeg?auto=compress&w=600",
-  inspect: "https://images.pexels.com/photos/32497160/pexels-photo-32497160.jpeg?auto=compress&w=600",
-  about:   "https://images.pexels.com/photos/9679179/pexels-photo-9679179.jpeg?auto=compress&w=900",
-}
-
-const PHONE_RAW  = "2015550100"
-const PHONE_DISP = "(201) 555-0100"
-const CALL_URL   = `tel:+1${PHONE_RAW}`
-const WA_URL     = `https://wa.me/${PHONE_RAW}?text=Hi!%20I%20need%20electrical%20service%20in%20North%20Jersey.`
-
-const copy = {
-  en: {
-    badge: "Licensed & Fully Insured in NJ",
-    pre:   "North Jersey's",
-    h1:    "Electrical",
-    h2:    "Contractors.",
-    sub:   "Panel upgrades · EV chargers · Rewiring · 24/7 emergency. 5.0★ rated across Bergen, Hudson & Passaic County.",
-    cta1:  `Call ${PHONE_DISP}`,
-    cta2:  "WhatsApp",
-    nav:   ["Services", "About", "Reviews", "Contact"],
-    navCta: "Call Now",
-    stats: [
-      { n: 15,  sfx: "+", lbl: "Years Experience" },
-      { n: 80,  sfx: "+", lbl: "Google Reviews"   },
-      { n: 5,   sfx: ".0★", lbl: "Rating"         },
-      { n: 24,  sfx: "/7",  lbl: "Emergency Line"  },
-    ],
-    svcTitle: "Services",
-    svcSub:   "Residential & commercial electrical work — safe, clean, and code-compliant.",
-    svcs: [
-      { img: IMG.panel,   title: "Panel Upgrades",              desc: "200A upgrades, sub-panels, and load center replacements. All permits pulled, all inspections passed." },
-      { img: IMG.ev,      title: "EV Charger Installation",     desc: "Level 2 home chargers for all major brands. We handle permits, conduit runs, and utility coordination." },
-      { img: IMG.emrg,    title: "Emergency Service 24/7",      desc: "Sparks, outages, burning smell? We respond fast — day, night, weekends, holidays. No extra call-out fee." },
-      { img: IMG.light,   title: "Lighting Installation",       desc: "Recessed lighting, ceiling fans, outdoor fixtures, and LED upgrades. Professional finish every time." },
-      { img: IMG.rewire,  title: "Rewiring",                    desc: "Knob-and-tube or aluminum wiring? We rewire safely to current NEC code. Free assessment included." },
-      { img: IMG.inspect, title: "Code Compliance Inspections", desc: "Buying or selling? Our licensed inspectors identify code violations before they become expensive problems." },
-    ],
-    aboutLabel: "About Us",
-    aboutTitle: "15 Years of Precision\nElectrical Work.",
-    aboutBody:  "Apex Electrical Contractors has served North Jersey homeowners and businesses for 15+ years with one guiding principle: safety first, always. Fully licensed, bonded, and insured. Our crews show up on time, work clean, and don't leave until the job passes inspection.",
-    aboutBullets: ["Licensed & fully insured in NJ", "Same-day emergency response", "Up-front, transparent pricing"],
-    aboutCta: "Schedule Inspection",
-    revTitle: "5.0★ on Google.",
-    revSub:   "80+ verified reviews from customers across North Jersey.",
-    reviews: [
-      { name: "Thomas B.", text: "Apex upgraded my 100A panel and installed 3 EV chargers in one day. Pulled all the permits. Crew was professional and spotless. My new go-to." },
-      { name: "Rachel D.", text: "Called at 9pm — sparks from an outlet. They were at my door in under an hour. Fixed it, explained what caused it, fair price. Lifesavers." },
-      { name: "Carlos V.", text: "Full house rewire, all permits, passed inspection first try. Price matched the quote exactly. That alone puts them ahead of every other contractor I've used." },
-      { name: "Diane K.",  text: "Code inspection before selling my home found 2 violations. Fixed same day. Closed without a single issue. These guys know what they're doing." },
-    ],
-    contactTitle: "Get a Free Estimate.",
-    contactSub:   "Call or WhatsApp anytime. Emergency line open 24/7.",
-    contactDetails: [
-      { icon: "📍", txt: "Bergen · Hudson · Passaic County, NJ" },
-      { icon: "🕐", txt: "Mon–Fri 7am–7pm · Sat 8am–5pm · Emergency 24/7" },
-    ],
-    footerTag: "Licensed electrical contractors. North Jersey, 15+ years.",
-    switchLang: "ES",
-  },
-  es: {
-    badge: "Licenciados y Asegurados en NJ",
-    pre:   "Electricistas de Confianza en",
-    h1:    "North Jersey",
-    h2:    "",
-    sub:   "Paneles · Cargadores EV · Recableado · Emergencias 24/7. Calificación 5.0★ en Bergen, Hudson y Passaic County.",
-    cta1:  `Llamar ${PHONE_DISP}`,
-    cta2:  "WhatsApp",
-    nav:   ["Servicios", "Nosotros", "Reseñas", "Contacto"],
-    navCta: "Llamar",
-    stats: [
-      { n: 15,  sfx: "+",   lbl: "Años de Experiencia" },
-      { n: 80,  sfx: "+",   lbl: "Reseñas en Google"   },
-      { n: 5,   sfx: ".0★", lbl: "Calificación"        },
-      { n: 24,  sfx: "/7",  lbl: "Línea de Emergencia" },
-    ],
-    svcTitle: "Servicios",
-    svcSub:   "Trabajo eléctrico residencial y comercial — seguro, limpio y conforme al código.",
-    svcs: [
-      { img: IMG.panel,   title: "Actualización de Paneles",     desc: "Actualizaciones a 200A, sub-paneles y reemplazos de centros de carga. Todos los permisos y aprobaciones." },
-      { img: IMG.ev,      title: "Instalación de Cargadores EV", desc: "Cargadores Nivel 2 para todas las marcas. Manejamos permisos, canalizaciones y coordinación con la empresa eléctrica." },
-      { img: IMG.emrg,    title: "Emergencias 24/7",             desc: "¿Chispas, corte de luz, olor a quemado? Respondemos rápido — de día, de noche, fines de semana y feriados." },
-      { img: IMG.light,   title: "Instalación de Iluminación",   desc: "Iluminación empotrada, ventiladores de techo, accesorios exteriores y actualizaciones LED. Acabado profesional." },
-      { img: IMG.rewire,  title: "Recableado",                   desc: "¿Cableado antiguo? Recableamos de forma segura al código NEC vigente. Evaluación gratuita incluida." },
-      { img: IMG.inspect, title: "Inspecciones de Cumplimiento", desc: "¿Comprando o vendiendo? Nuestros inspectores identifican violaciones al código antes de que cuesten más." },
-    ],
-    aboutLabel: "Nosotros",
-    aboutTitle: "15 Años de Trabajo\nEléctrico de Precisión.",
-    aboutBody:  "Apex Electrical Contractors ha servido a propietarios y negocios en North Jersey por 15+ años con un principio rector: la seguridad primero, siempre. Con licencia completa, afianzados y asegurados. Nuestros equipos llegan a tiempo, trabajan limpio y no se van hasta que el trabajo pase la inspección.",
-    aboutBullets: ["Licenciados y totalmente asegurados en NJ", "Respuesta de emergencia el mismo día", "Precios transparentes desde el principio"],
-    aboutCta: "Programar Inspección",
-    revTitle: "5.0★ en Google.",
-    revSub:   "Más de 80 reseñas verificadas de clientes en North Jersey.",
-    reviews: [
-      { name: "Thomas B.", text: "Apex actualizó mi panel e instaló 3 cargadores EV en un día. Sacaron todos los permisos. El equipo fue profesional y muy limpio. Mi primera llamada de ahora en adelante." },
-      { name: "Rachel D.", text: "Llamé a las 9pm — chispas de un enchufe. Llegaron en menos de una hora. Lo arreglaron, explicaron la causa, precio justo. Unos salvadores." },
-      { name: "Carlos V.", text: "Recableado completo de la casa, todos los permisos, inspección aprobada al primer intento. El precio fue exacto al presupuesto. Eso solo los pone por encima de todos." },
-      { name: "Diane K.",  text: "Inspección antes de vender mi casa encontró 2 violaciones. Las arreglaron el mismo día. Cerré sin un solo problema. Saben lo que hacen." },
-    ],
-    contactTitle: "Obtenga un Presupuesto Gratis.",
-    contactSub:   "Llame o escriba por WhatsApp en cualquier momento. Emergencias 24/7.",
-    contactDetails: [
-      { icon: "📍", txt: "Bergen · Hudson · Passaic County, NJ" },
-      { icon: "🕐", txt: "Lun–Vie 7am–7pm · Sáb 8am–5pm · Emergencias 24/7" },
-    ],
-    footerTag: "Electricistas con licencia. North Jersey, 15+ años.",
-    switchLang: "EN",
-  },
-}
-
-type Lang = "en" | "es"
-
 function Counter({ to, suffix }: { to: number; suffix: string }) {
-  const ref  = useRef<HTMLSpanElement>(null)
-  const inV  = useInView(ref, { once: true, amount: 0.4 })
-  const mv   = useMotionValue(0)
+  const ref = useRef<HTMLSpanElement>(null)
+  const inV = useInView(ref, { once: true, amount: 0.4 })
+  const mv  = useMotionValue(0)
   const [d, setD] = useState("0")
   useEffect(() => {
     if (!inV) return
-    const c = animate(mv, to, {
-      duration: 1.6,
-      ease: EXPO as [number, number, number, number],
-      onUpdate: v => setD(String(Math.floor(v))),
-    })
+    const c = animate(mv, to, { duration: 1.6, ease: EXPO as [number,number,number,number], onUpdate: v => setD(String(Math.floor(v))) })
     return () => c.stop()
   }, [inV, mv, to])
   return <span ref={ref}>{d}{suffix}</span>
 }
 
+// ─── Content ──────────────────────────────────────────────────────────────────
+type Lang = "en" | "es"
+
+const copy = {
+  en: {
+    badge:      "5.0★ · 80 Reviews on Google",
+    h1:         "North Jersey's Expert Electrician",
+    sub:        "Panel upgrades, EV chargers, full rewires. 15+ years serving Bergen County and North Jersey — licensed, insured, on time.",
+    cta1:       "📞 Call (201) 555-0100",
+    cta2:       "💬 WhatsApp",
+    nav:        ["Services", "Reviews", "About", "Contact"],
+    navCta:     "📞 (201) 555-0100",
+    trustItems: ["80+ Google Reviews", "5.0★ Rating", "15+ Years Exp."],
+    svcTitle:   "Every Electrical Job. Done Right.",
+    svcs: [
+      { icon: "⚡", title: "Panel Upgrades",      desc: "200A upgrades, breaker replacements, and full electrical panel modernization.",       cta: "Get Quote" },
+      { icon: "🚗", title: "EV Charger Install",  desc: "Level 2 home charger installation. All brands, all vehicles, all municipalities.",    cta: "Get Quote" },
+      { icon: "💡", title: "Lighting & Fixtures",  desc: "Recessed lighting, ceiling fans, dimmer systems, and smart home lighting control.",   cta: "Get Quote" },
+      { icon: "🔌", title: "Outlet & Wiring",     desc: "New outlets, GFCI, USB-C ports, and full home rewiring for older homes.",             cta: "Get Quote" },
+      { icon: "🏠", title: "Whole-Home Rewire",   desc: "Safe, code-compliant rewiring of older homes with minimal wall disruption.",          cta: "Get Quote" },
+      { icon: "🛡️", title: "Safety Inspections",  desc: "Pre-sale, post-purchase, and annual electrical inspections with written report.",     cta: "Get Quote" },
+    ],
+    midTitle:   "Power Problems Fixed Fast.",
+    midSub:     "Licensed master electrician — same week appointments available",
+    midCta:     "📞 Call (201) 555-0100",
+    revTitle:   "What North Jersey Says",
+    revSub:     "80+ verified Google reviews",
+    reviews: [
+      { name: "Lisa M.",   loc: "Paramus NJ",     text: "Installed our EV charger in half a day. Clean work, reasonable price, and passed inspection first try." },
+      { name: "Carlos R.", loc: "Ramsey NJ",       text: "Panel upgrade done perfectly. He explained everything, no surprises on the bill, great experience." },
+      { name: "Jennifer K.", loc: "Hackensack NJ", text: "Rewired our 1960s house. Professional, thorough, and incredibly clean. Highly recommend." },
+      { name: "Tom W.",    loc: "Ridgewood NJ",    text: "Called for flickering lights, had it diagnosed and fixed same day. Knows his craft inside out." },
+    ],
+    aboutTitle:  "15 Years. 80+ Perfect Reviews.",
+    aboutBody:   "Apex Electrical has served North Jersey homeowners since 2009. Licensed master electrician, fully insured, background-checked, and code-compliant on every job.",
+    areas:       ["Bergen County", "Passaic County", "Morris County", "Essex County"],
+    bullets:     ["Licensed Master Electrician NJ", "80+ Five-Star Reviews", "15+ Years in Business", "EV Charger Certified Installer"],
+    finalTitle:  "Ready to Power Up?",
+    finalSub:    "Free estimates. Same-week appointments. No surprises.",
+    finalCta1:   "📞 Call (201) 555-0100",
+    finalCta2:   "💬 Message on WhatsApp",
+    finalInfo:   "North Jersey · Licensed & Insured",
+    footerTag:   "Bergen County NJ",
+    footerLinks: ["Services", "About", "Reviews", "Contact"],
+    switchLang:  "ES",
+    callLabel:   "📞 Call",
+    waLabel:     "💬 WhatsApp",
+  },
+  es: {
+    badge:      "5.0★ · 80 Reseñas en Google",
+    h1:         "El Electricista Experto del Norte de Jersey",
+    sub:        "Mejoras de panel, cargadores EV, recableados completos. Más de 15 años sirviendo al Condado Bergen y el Norte de Jersey — con licencia, asegurado, puntual.",
+    cta1:       "📞 Llamar (201) 555-0100",
+    cta2:       "💬 WhatsApp",
+    nav:        ["Servicios", "Reseñas", "Nosotros", "Contacto"],
+    navCta:     "📞 (201) 555-0100",
+    trustItems: ["80+ Reseñas en Google", "Calificación 5.0★", "Más de 15 años de experiencia"],
+    svcTitle:   "Cada Trabajo Eléctrico. Hecho Bien.",
+    svcs: [
+      { icon: "⚡", title: "Mejoras de Panel",        desc: "Actualizaciones a 200A, reemplazo de breakers y modernización completa del panel.",          cta: "Cotizar" },
+      { icon: "🚗", title: "Instalación Cargador EV", desc: "Instalación de cargador de nivel 2 en el hogar. Todas las marcas y municipios.",             cta: "Cotizar" },
+      { icon: "💡", title: "Iluminación y Accesorios", desc: "Iluminación empotrada, ventiladores, dimmers y control de iluminación inteligente.",         cta: "Cotizar" },
+      { icon: "🔌", title: "Salidas y Cableado",      desc: "Nuevas salidas, GFCI, puertos USB-C y recableado completo para hogares antiguos.",            cta: "Cotizar" },
+      { icon: "🏠", title: "Recableado Completo",     desc: "Recableado seguro y conforme a código para hogares más antiguos con mínima interrupción.",     cta: "Cotizar" },
+      { icon: "🛡️", title: "Inspecciones de Seguridad", desc: "Inspecciones preventa, post-compra y anuales con informe escrito.",                         cta: "Cotizar" },
+    ],
+    midTitle:   "Problemas Eléctricos Resueltos Rápido.",
+    midSub:     "Electricista maestro con licencia — citas disponibles la misma semana",
+    midCta:     "📞 Llamar (201) 555-0100",
+    revTitle:   "Lo Que Dice el Norte de Jersey",
+    revSub:     "Más de 80 reseñas verificadas en Google",
+    reviews: [
+      { name: "Lisa M.",     loc: "Paramus NJ",     text: "Instaló nuestro cargador EV en medio día. Trabajo limpio, precio razonable y pasó la inspección a la primera." },
+      { name: "Carlos R.",   loc: "Ramsey NJ",       text: "Mejora de panel perfecta. Explicó todo, sin sorpresas en la factura, excelente experiencia." },
+      { name: "Jennifer K.", loc: "Hackensack NJ",   text: "Recableó nuestra casa de los años 60. Profesional, minucioso e increíblemente limpio. Lo recomiendo mucho." },
+      { name: "Tom W.",      loc: "Ridgewood NJ",    text: "Llamé por luces parpadeantes, lo diagnosticó y arregló el mismo día. Conoce su oficio a fondo." },
+    ],
+    aboutTitle:  "15 Años. Más de 80 Reseñas Perfectas.",
+    aboutBody:   "Apex Electrical ha servido a los propietarios del Norte de Jersey desde 2009. Electricista maestro con licencia, completamente asegurado y cumpliendo el código en cada trabajo.",
+    areas:       ["Condado Bergen", "Condado Passaic", "Condado Morris", "Condado Essex"],
+    bullets:     ["Electricista Maestro con Licencia en NJ", "80+ Reseñas de Cinco Estrellas", "Más de 15 Años en el Negocio", "Instalador Certificado de Cargadores EV"],
+    finalTitle:  "¿Listo para Encenderlo?",
+    finalSub:    "Presupuestos gratuitos. Citas la misma semana. Sin sorpresas.",
+    finalCta1:   "📞 Llamar (201) 555-0100",
+    finalCta2:   "💬 Mensaje en WhatsApp",
+    finalInfo:   "Norte de Jersey · Con Licencia y Asegurado",
+    footerTag:   "Condado Bergen NJ",
+    footerLinks: ["Servicios", "Nosotros", "Reseñas", "Contacto"],
+    switchLang:  "EN",
+    callLabel:   "📞 Llamar",
+    waLabel:     "💬 WhatsApp",
+  },
+}
+
+// ─── Styles ───────────────────────────────────────────────────────────────────
+const FONT_URL = "https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Barlow:wght@300;400;500;600&display=swap"
+
+const LIQUID_GLASS_CSS = `
+.ax-lg {
+  background: rgba(255,255,255,0.01);
+  background-blend-mode: luminosity;
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  border: none;
+  box-shadow: inset 0 1px 1px rgba(255,255,255,0.1);
+  position: relative;
+  overflow: hidden;
+}
+.ax-lg::before {
+  content: "";
+  position: absolute; inset: 0;
+  border-radius: inherit;
+  padding: 1.4px;
+  background: linear-gradient(180deg,
+    rgba(255,255,255,0.45) 0%,
+    rgba(255,255,255,0.15) 20%,
+    rgba(255,255,255,0) 40%,
+    rgba(255,255,255,0) 60%,
+    rgba(255,255,255,0.15) 80%,
+    rgba(255,255,255,0.45) 100%);
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+}
+.ax-lg-strong {
+  background: rgba(255,255,255,0.01);
+  backdrop-filter: blur(50px);
+  -webkit-backdrop-filter: blur(50px);
+  box-shadow: 4px 4px 4px rgba(0,0,0,0.05), inset 0 1px 1px rgba(255,255,255,0.15);
+  position: relative;
+  overflow: hidden;
+}
+.ax-lg-strong::before {
+  content: "";
+  position: absolute; inset: 0;
+  border-radius: inherit; padding: 1.4px;
+  background: linear-gradient(180deg,
+    rgba(255,255,255,0.5) 0%,
+    rgba(255,255,255,0.2) 20%,
+    rgba(255,255,255,0) 40%,
+    rgba(255,255,255,0) 60%,
+    rgba(255,255,255,0.2) 80%,
+    rgba(255,255,255,0.5) 100%);
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+}
+`
+
+const H: React.CSSProperties = { fontFamily: "'Instrument Serif', serif", fontStyle: "italic" }
+const B: React.CSSProperties = { fontFamily: "'Barlow', sans-serif" }
+
+// ─── Main Component ───────────────────────────────────────────────────────────
 export default function ApexElectricalClient() {
-  const [lang, setLang]       = useState<Lang>("en")
+  const [lang, setLang]         = useState<Lang>("en")
   const [scrolled, setScrolled] = useState(false)
   const [menuOpen, setMenuOpen] = useState(false)
   const t = copy[lang]
 
   useEffect(() => {
-    const fn = () => setScrolled(window.scrollY > 48)
+    const fn = () => setScrolled(window.scrollY > 40)
     window.addEventListener("scroll", fn, { passive: true })
     return () => window.removeEventListener("scroll", fn)
   }, [])
 
-  const go = (id: string) => {
-    document.getElementById(id)?.scrollIntoView({ behavior: "smooth" })
-    setMenuOpen(false)
-  }
-  const ids = ["services", "about", "reviews", "contact"]
+  const ids = ["services", "reviews", "about", "contact"]
+  const go  = (id: string) => { document.getElementById(id)?.scrollIntoView({ behavior: "smooth" }); setMenuOpen(false) }
 
   return (
-    <div style={{ fontFamily: "'Space Grotesk', sans-serif", background: C.canvas, color: C.text, overflowX: "hidden" }}>
+    <div style={{ ...B, background: CANVAS, color: "#fff", overflowX: "hidden", minHeight: "100vh" }}>
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@700&display=swap');
+        @import url('${FONT_URL}');
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
         html { scroll-behavior: smooth; }
-        ::selection { background: ${C.ember}33; }
+        ${LIQUID_GLASS_CSS}
+        .ax-desk { display: flex; }
+        .ax-burger { display: none; }
+        @media (max-width: 768px) {
+          .ax-desk { display: none !important; }
+          .ax-burger { display: block !important; }
+          .ax-hero-h1 { font-size: clamp(34px, 9vw, 56px) !important; letter-spacing: -2px !important; }
+          .ax-svc-grid { grid-template-columns: 1fr !important; }
+          .ax-about-grid { grid-template-columns: 1fr !important; }
+          .ax-rev-grid { grid-template-columns: 1fr !important; }
+          .ax-sticky { display: grid !important; }
+        }
+        @media (min-width: 769px) { .ax-sticky { display: none !important; } }
       `}</style>
 
       {/* NAV */}
       <nav style={{
-        position: "fixed", top: 0, left: 0, right: 0, zIndex: 100,
-        background: scrolled ? "rgba(17,17,17,0.96)" : "transparent",
-        backdropFilter: scrolled ? "blur(14px)" : "none",
-        borderBottom: scrolled ? `1px solid ${C.border}` : "none",
-        transition: "background 0.25s, border-color 0.25s",
-        padding: "0 28px",
-      }}>
-        <div style={{ maxWidth: 1200, margin: "0 auto", height: 64, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-          {/* Logo */}
+        position: "fixed", top: 16, left: "50%", transform: "translateX(-50%)",
+        zIndex: 100, maxWidth: 900, width: "calc(100% - 32px)",
+        borderRadius: 9999, padding: "10px 20px",
+        background: scrolled ? "rgba(17,17,17,0.8)" : "transparent",
+        backdropFilter: scrolled ? "blur(20px)" : "none",
+        transition: "background 0.3s, backdrop-filter 0.3s",
+      }} className={scrolled ? "" : "ax-lg"}>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
           <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-            <div style={{ width: 28, height: 28, background: C.ember, borderRadius: 6, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 14 }}>⚡</div>
-            <span style={{ fontSize: 15, fontWeight: 700, letterSpacing: "-0.025em", color: C.text }}>APEX ELECTRICAL</span>
+            <div style={{ width: 32, height: 32, borderRadius: "50%", background: ACCENT, display: "flex", alignItems: "center", justifyContent: "center" }}>
+              <span style={{ ...H, fontSize: 13, color: "#fff" }}>AE</span>
+            </div>
+            <span style={{ ...B, fontSize: 13, fontWeight: 600, color: "#fff" }}>Apex Electrical</span>
           </div>
-
-          {/* Desktop */}
-          <div className="apex-desk" style={{ display: "flex", alignItems: "center", gap: 36 }}>
+          <div className="ax-desk" style={{ alignItems: "center", gap: 28 }}>
             {t.nav.map((lnk, i) => (
-              <button key={i} onClick={() => go(ids[i])} style={{
-                background: "none", border: "none", cursor: "pointer", fontWeight: 700,
-                fontSize: 13, color: C.sec, letterSpacing: "-0.01em", transition: "color 0.15s",
-              }}
-                onMouseEnter={e => (e.currentTarget.style.color = C.text)}
-                onMouseLeave={e => (e.currentTarget.style.color = C.sec)}
+              <button key={i} onClick={() => go(ids[i])} style={{ ...B, background: "none", border: "none", cursor: "pointer", fontSize: 13, fontWeight: 500, color: "rgba(255,255,255,0.7)" }}
+                onMouseEnter={e => (e.currentTarget.style.color = "#fff")}
+                onMouseLeave={e => (e.currentTarget.style.color = "rgba(255,255,255,0.7)")}
               >{lnk}</button>
             ))}
-            <button onClick={() => setLang(lang === "en" ? "es" : "en")} style={{
-              background: C.card, border: `1px solid ${C.border}`, cursor: "pointer",
-              color: C.sec, fontSize: 11, fontWeight: 700, padding: "5px 11px",
-              borderRadius: 999, letterSpacing: "0.04em", transition: "color 0.15s",
-            }}
-              onMouseEnter={e => (e.currentTarget.style.color = C.text)}
-              onMouseLeave={e => (e.currentTarget.style.color = C.sec)}
-            >{t.switchLang}</button>
-            <a href={CALL_URL} style={{
-              background: C.ember, color: "#fff", padding: "9px 20px",
-              borderRadius: 15, fontSize: 13, fontWeight: 700,
-              textDecoration: "none", letterSpacing: "-0.01em",
-              transition: "opacity 0.15s",
-            }}
-              onMouseEnter={e => (e.currentTarget.style.opacity = "0.88")}
-              onMouseLeave={e => (e.currentTarget.style.opacity = "1")}
-            >{t.navCta}</a>
+            <button onClick={() => setLang(lang === "en" ? "es" : "en")} style={{ ...B, background: "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.15)", borderRadius: 9999, cursor: "pointer", color: "rgba(255,255,255,0.7)", fontSize: 11, fontWeight: 500, padding: "4px 10px" }}>{t.switchLang}</button>
+            <a href={CALL_URL} style={{ ...B, background: ACCENT, color: "#fff", padding: "8px 18px", borderRadius: 9999, fontSize: 13, fontWeight: 600, textDecoration: "none" }}>{t.navCta}</a>
           </div>
-
-          {/* Hamburger */}
-          <button className="apex-burger" onClick={() => setMenuOpen(!menuOpen)} style={{
-            display: "none", background: "none", border: "none",
-            cursor: "pointer", color: C.text, fontSize: 22,
-          }}>☰</button>
+          <button className="ax-burger" onClick={() => setMenuOpen(!menuOpen)} style={{ background: "none", border: "none", cursor: "pointer", color: "#fff", fontSize: 22 }}>☰</button>
         </div>
-
-        <AnimatePresence>
-          {menuOpen && (
-            <motion.div initial={{ opacity: 0, y: -6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -6 }}
-              style={{ background: C.card, borderTop: `1px solid ${C.border}`, padding: "16px 28px" }}>
-              {t.nav.map((lnk, i) => (
-                <button key={i} onClick={() => go(ids[i])} style={{
-                  display: "block", width: "100%", textAlign: "left", background: "none",
-                  border: "none", cursor: "pointer", color: C.text, fontSize: 16, fontWeight: 700,
-                  padding: "13px 0", borderBottom: `1px solid ${C.border}`,
-                }}>{lnk}</button>
-              ))}
-              <div style={{ display: "flex", gap: 10, paddingTop: 16 }}>
-                <a href={CALL_URL} style={{ flex: 1, background: C.ember, color: "#fff", textAlign: "center", padding: "13px", borderRadius: 15, fontSize: 14, fontWeight: 700, textDecoration: "none" }}>{t.navCta}</a>
-                <button onClick={() => setLang(lang === "en" ? "es" : "en")} style={{ background: C.panel, border: `1px solid ${C.border}`, cursor: "pointer", color: C.sec, padding: "13px 16px", borderRadius: 999, fontWeight: 700, fontSize: 11 }}>{t.switchLang}</button>
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
+        {menuOpen && (
+          <div style={{ marginTop: 12, borderTop: "1px solid rgba(255,255,255,0.1)", paddingTop: 12 }}>
+            {t.nav.map((lnk, i) => (
+              <button key={i} onClick={() => go(ids[i])} style={{ display: "block", width: "100%", textAlign: "left", background: "none", border: "none", cursor: "pointer", color: "#fff", fontSize: 15, fontWeight: 500, padding: "10px 0", borderBottom: "1px solid rgba(255,255,255,0.06)" }}>{lnk}</button>
+            ))}
+            <div style={{ display: "flex", gap: 8, paddingTop: 12 }}>
+              <a href={CALL_URL} style={{ flex: 1, background: ACCENT, color: "#fff", textAlign: "center", padding: "11px", borderRadius: 9999, fontSize: 13, fontWeight: 600, textDecoration: "none" }}>{t.cta1}</a>
+              <button onClick={() => setLang(lang === "en" ? "es" : "en")} style={{ background: "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.15)", borderRadius: 9999, cursor: "pointer", color: "rgba(255,255,255,0.7)", padding: "11px 14px", fontWeight: 500, fontSize: 11 }}>{t.switchLang}</button>
+            </div>
+          </div>
+        )}
       </nav>
 
       {/* HERO */}
-      <section style={{ position: "relative", minHeight: "100vh", display: "flex", alignItems: "center", overflow: "hidden" }}>
-        <div style={{
-          position: "absolute", inset: 0,
-          backgroundImage: `url(${IMG.hero})`,
-          backgroundSize: "cover", backgroundPosition: "center",
-        }}>
-          <div style={{ position: "absolute", inset: 0, background: "linear-gradient(110deg, rgba(17,17,17,0.97) 48%, rgba(17,17,17,0.6) 100%)" }} />
-        </div>
-
-        <div style={{ position: "relative", zIndex: 1, maxWidth: 1200, margin: "0 auto", padding: "128px 28px 96px", width: "100%" }}>
-          {/* Badge */}
-          <motion.div initial={{ y: 10 }} animate={{ y: 0 }} transition={{ duration: 0.45, ease: EXPO }}
-            style={{ display: "inline-flex", alignItems: "center", gap: 6, background: C.card, border: `1px solid ${C.border}`, borderRadius: 999, padding: "5px 14px 5px 10px", fontSize: 11, fontWeight: 700, color: C.sec, letterSpacing: "0.06em", marginBottom: 28 }}>
-            <span style={{ width: 6, height: 6, borderRadius: "50%", background: C.ember, display: "inline-block" }} />
-            {t.badge}
+      <section style={{ position: "relative", height: "100vh", background: CANVAS, overflow: "hidden" }}>
+        <FadingVideo src={HERO_VIDEO} style={{ position: "absolute", left: "50%", top: 0, transform: "translateX(-50%)", width: "120%", height: "110%", objectFit: "cover", objectPosition: "center", zIndex: 0 }} />
+        <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to bottom, rgba(17,17,17,0.65) 0%, rgba(17,17,17,0.35) 50%, rgba(17,17,17,0.88) 100%)", zIndex: 1 }} />
+        <div style={{ position: "relative", zIndex: 2, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", height: "100%", padding: "96px 24px 80px", textAlign: "center" }}>
+          <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4, duration: 0.5 }}>
+            <div className="ax-lg" style={{ display: "inline-flex", alignItems: "center", borderRadius: 9999, padding: "6px 16px", marginBottom: 24 }}>
+              <span style={{ ...B, fontSize: 12, fontWeight: 500, color: "rgba(255,255,255,0.85)" }}>{t.badge}</span>
+            </div>
           </motion.div>
 
-          {/* Pre-line */}
-          <motion.p initial={{ y: 10 }} animate={{ y: 0 }} transition={{ duration: 0.45, delay: 0.05, ease: EXPO }}
-            style={{ fontSize: "clamp(14px, 1.8vw, 18px)", fontWeight: 700, color: C.sec, letterSpacing: "-0.01em", marginBottom: 4 }}>
-            {t.pre}
-          </motion.p>
+          <BlurText text={t.h1} className="ax-hero-h1"
+            style={{ ...H, fontSize: "clamp(42px, 5.5vw, 68px)", color: "#fff", lineHeight: 0.9, letterSpacing: "-3px", maxWidth: 680, marginBottom: 20 }} />
 
-          {/* H1 */}
-          <motion.h1 initial={{ y: 32 }} animate={{ y: 0 }} transition={{ duration: 0.6, delay: 0.1, ease: EXPO }}
-            style={{ fontWeight: 700, fontSize: "clamp(56px, 9.5vw, 96px)", lineHeight: 0.92, letterSpacing: "-0.056em", color: C.text }}>
-            {t.h1}
-          </motion.h1>
-          {t.h2 && (
-            <motion.h1 initial={{ y: 32 }} animate={{ y: 0 }} transition={{ duration: 0.6, delay: 0.16, ease: EXPO }}
-              style={{ fontWeight: 700, fontSize: "clamp(56px, 9.5vw, 96px)", lineHeight: 0.92, letterSpacing: "-0.056em", color: C.ember }}>
-              {t.h2}
-            </motion.h1>
-          )}
-
-          {/* Sub */}
-          <motion.p initial={{ y: 10 }} animate={{ y: 0 }} transition={{ duration: 0.45, delay: 0.28, ease: EXPO }}
-            style={{ fontSize: "clamp(14px, 1.6vw, 16px)", color: C.sec, lineHeight: 1.65, marginTop: 20, maxWidth: 480, fontWeight: 700 }}>
+          <motion.p initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.8, duration: 0.45 }}
+            style={{ ...B, fontSize: 15, color: "rgba(255,255,255,0.72)", lineHeight: 1.65, maxWidth: 480, marginBottom: 28, fontWeight: 300 }}>
             {t.sub}
           </motion.p>
 
-          {/* CTAs */}
-          <motion.div initial={{ y: 10 }} animate={{ y: 0 }} transition={{ duration: 0.45, delay: 0.36, ease: EXPO }}
-            style={{ display: "flex", flexWrap: "wrap", gap: 12, marginTop: 36 }}>
-            <a href={CALL_URL} style={{
-              background: C.ember, color: "#fff", padding: "14px 28px",
-              borderRadius: 15, fontSize: 14, fontWeight: 700,
-              textDecoration: "none", letterSpacing: "-0.015em",
-              display: "flex", alignItems: "center", gap: 8,
-            }}>📞 {t.cta1}</a>
-            <a href={WA_URL} target="_blank" rel="noopener noreferrer" style={{
-              background: "transparent", color: C.text, padding: "13px 28px",
-              borderRadius: 15, fontSize: 14, fontWeight: 700,
-              textDecoration: "none", letterSpacing: "-0.015em",
-              border: `1px solid ${C.border}`,
-              display: "flex", alignItems: "center", gap: 8,
-            }}>💬 {t.cta2}</a>
+          <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 1.1, duration: 0.4 }}
+            style={{ display: "flex", flexWrap: "wrap", gap: 10, justifyContent: "center", marginBottom: 28 }}>
+            <a href={CALL_URL} className="ax-lg-strong" style={{ ...B, borderRadius: 9999, padding: "12px 24px", fontSize: 14, fontWeight: 600, color: "#fff", textDecoration: "none", display: "inline-block" }}>{t.cta1}</a>
+            <a href={WA_URL} target="_blank" rel="noopener noreferrer" style={{ ...B, color: "#fff", padding: "12px 24px", borderRadius: 9999, fontSize: 14, fontWeight: 500, textDecoration: "none", border: "1px solid rgba(255,255,255,0.25)" }}>{t.cta2}</a>
+          </motion.div>
+
+          <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 1.3, duration: 0.4 }}
+            style={{ display: "flex", gap: 12, flexWrap: "wrap", justifyContent: "center" }}>
+            {[
+              { num: "80+",  lbl: lang === "en" ? "Five-Star Reviews" : "Reseñas de 5 Estrellas" },
+              { num: "15+",  lbl: lang === "en" ? "Years Experience"  : "Años de Experiencia" },
+            ].map((s, i) => (
+              <div key={i} className="ax-lg" style={{ padding: "16px 20px", borderRadius: "1.25rem", minWidth: 160, textAlign: "center" }}>
+                <div style={{ ...H, fontSize: 28, color: "#fff", marginBottom: 4 }}>{s.num}</div>
+                <div style={{ ...B, fontSize: 11, color: "rgba(255,255,255,0.55)", fontWeight: 500, textTransform: "uppercase", letterSpacing: "0.05em" }}>{s.lbl}</div>
+              </div>
+            ))}
           </motion.div>
         </div>
       </section>
 
-      {/* STATS */}
-      <section style={{ background: C.card, borderTop: `1px solid ${C.border}`, borderBottom: `1px solid ${C.border}`, padding: "44px 28px" }}>
-        <div style={{ maxWidth: 1200, margin: "0 auto", display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 24 }}>
-          {t.stats.map((s, i) => (
+      {/* TRUST COUNTERS */}
+      <section style={{ background: CANVAS, borderTop: "1px solid rgba(255,255,255,0.06)", borderBottom: "1px solid rgba(255,255,255,0.06)", padding: "56px 24px" }}>
+        <div style={{ maxWidth: 900, margin: "0 auto", display: "flex", justifyContent: "space-around", flexWrap: "wrap", gap: 32 }}>
+          {[
+            { n: 80,  sfx: "+",    lbl: t.trustItems[0] },
+            { n: 5,   sfx: ".0★",  lbl: t.trustItems[1] },
+            { n: 15,  sfx: "+",    lbl: t.trustItems[2] },
+          ].map((s, i) => (
             <div key={i} style={{ textAlign: "center" }}>
-              <div style={{ fontSize: "clamp(38px, 4.5vw, 56px)", fontWeight: 700, color: C.text, lineHeight: 1, letterSpacing: "-0.04em" }}>
+              <div style={{ ...H, fontSize: "clamp(40px, 5vw, 58px)", color: ACCENT, lineHeight: 1 }}>
                 <Counter to={s.n} suffix={s.sfx} />
               </div>
-              <div style={{ fontSize: 11, color: C.ter, marginTop: 6, fontWeight: 700, letterSpacing: "0.07em", textTransform: "uppercase" }}>{s.lbl}</div>
+              <div style={{ ...B, fontSize: 11, color: "rgba(255,255,255,0.45)", marginTop: 6, fontWeight: 500, textTransform: "uppercase", letterSpacing: "0.06em" }}>{s.lbl}</div>
             </div>
           ))}
         </div>
       </section>
 
       {/* SERVICES */}
-      <section id="services" style={{ background: C.canvas, padding: "96px 28px" }}>
-        <div style={{ maxWidth: 1200, margin: "0 auto" }}>
-          <div style={{ marginBottom: 52 }}>
-            <p style={{ fontSize: 11, fontWeight: 700, color: C.ember, letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: 10 }}>What We Do</p>
-            <h2 style={{ fontSize: "clamp(32px, 4vw, 48px)", fontWeight: 700, letterSpacing: "-0.025em", color: C.text }}>{t.svcTitle}</h2>
-            <p style={{ color: C.sec, fontSize: 14, marginTop: 10, maxWidth: 520, fontWeight: 700, lineHeight: 1.6 }}>{t.svcSub}</p>
+      <section id="services" style={{ position: "relative", minHeight: "100vh", background: CANVAS, overflow: "hidden", padding: "96px 24px" }}>
+        <FadingVideo src={SERVICES_VIDEO} style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", zIndex: 0, filter: "brightness(0.2)" }} />
+        <div style={{ position: "absolute", inset: 0, background: "rgba(17,17,17,0.65)", zIndex: 1 }} />
+        <div style={{ position: "relative", zIndex: 2, maxWidth: 1100, margin: "0 auto" }}>
+          <BlurText text={t.svcTitle}
+            style={{ ...H, fontSize: "clamp(32px, 4.5vw, 60px)", color: "#fff", lineHeight: 0.9, letterSpacing: "-2.5px", textAlign: "center", marginBottom: 52 }} />
+          <div className="ax-svc-grid" style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 14 }}>
+            {t.svcs.map((s, i) => (
+              <motion.div key={i} className="ax-lg" initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, amount: 0.1 }} transition={{ duration: 0.4, delay: i * 0.07 }}
+                style={{ borderRadius: "1.25rem", padding: "24px", minHeight: 260, display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
+                <div>
+                  <div style={{ fontSize: 26, marginBottom: 12 }}>{s.icon}</div>
+                  <h3 style={{ ...H, fontSize: 19, color: "#fff", marginBottom: 10 }}>{s.title}</h3>
+                  <p style={{ ...B, fontSize: 13, color: "rgba(255,255,255,0.62)", lineHeight: 1.65 }}>{s.desc}</p>
+                </div>
+                <a href={CALL_URL} style={{ ...B, display: "inline-block", marginTop: 16, background: "transparent", border: `1px solid ${ACCENT}`, color: ACCENT, borderRadius: 9999, padding: "8px 16px", fontSize: 12, fontWeight: 600, textDecoration: "none", textAlign: "center" }}>{s.cta}</a>
+              </motion.div>
+            ))}
           </div>
+        </div>
+      </section>
 
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(340px, 1fr))", gap: 1, background: C.border, borderRadius: 20, overflow: "hidden" }}>
-            {t.svcs.map((svc, i) => (
-              <motion.div key={i}
-                initial={{ opacity: 0 }} whileInView={{ opacity: 1 }}
-                viewport={{ once: true, amount: 0.1 }}
-                transition={{ duration: 0.35, delay: i * 0.05 }}
-                style={{ background: C.card, overflow: "hidden", position: "relative" }}>
-                {/* Image */}
-                <div style={{ height: 190, overflow: "hidden", position: "relative" }}>
-                  <img src={svc.img} alt={svc.title} loading="lazy"
-                    style={{ width: "100%", height: "100%", objectFit: "cover", display: "block", filter: "brightness(0.75)" }} />
-                  {/* ember top strip */}
-                  <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: 2, background: C.ember }} />
-                </div>
-                <div style={{ padding: "20px 24px 28px" }}>
-                  <h3 style={{ fontSize: 15, fontWeight: 700, color: C.text, marginBottom: 8, letterSpacing: "-0.015em" }}>{svc.title}</h3>
-                  <p style={{ fontSize: 13, color: C.sec, lineHeight: 1.65, fontWeight: 700 }}>{svc.desc}</p>
-                </div>
+      {/* CTA MID */}
+      <section style={{ background: CANVAS, textAlign: "center", padding: "80px 24px", borderTop: "1px solid rgba(255,255,255,0.06)" }}>
+        <h2 style={{ ...H, fontSize: "clamp(26px, 4vw, 46px)", color: "#fff", marginBottom: 12 }}>{t.midTitle}</h2>
+        <p style={{ ...B, fontSize: 14, color: "rgba(255,255,255,0.55)", marginBottom: 28, fontWeight: 300 }}>{t.midSub}</p>
+        <a href={CALL_URL} className="ax-lg-strong" style={{ ...B, display: "inline-block", borderRadius: 9999, padding: "14px 28px", fontSize: 15, fontWeight: 600, color: "#fff", textDecoration: "none" }}>{t.midCta}</a>
+      </section>
+
+      {/* REVIEWS */}
+      <section id="reviews" style={{ background: CANVAS, padding: "80px 24px", borderTop: "1px solid rgba(255,255,255,0.06)" }}>
+        <div style={{ maxWidth: 1100, margin: "0 auto" }}>
+          <h2 style={{ ...H, fontSize: "clamp(26px, 4vw, 46px)", color: "#fff", textAlign: "center", marginBottom: 8 }}>{t.revTitle}</h2>
+          <p style={{ ...B, fontSize: 12, color: "rgba(255,255,255,0.4)", textAlign: "center", marginBottom: 44 }}>{t.revSub}</p>
+          <div className="ax-rev-grid" style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 14 }}>
+            {t.reviews.map((r, i) => (
+              <motion.div key={i} className="ax-lg" initial={{ opacity: 0, y: 14 }} whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, amount: 0.15 }} transition={{ duration: 0.35, delay: i * 0.06 }}
+                style={{ borderRadius: "1.25rem", padding: "24px" }}>
+                <div style={{ color: ACCENT, fontSize: 11, letterSpacing: 2, marginBottom: 12 }}>★★★★★</div>
+                <p style={{ ...B, fontSize: 13, color: "rgba(255,255,255,0.72)", lineHeight: 1.7, marginBottom: 16 }}>&ldquo;{r.text}&rdquo;</p>
+                <div style={{ ...B, fontSize: 12, fontWeight: 600, color: "#fff" }}>{r.name}</div>
+                <div style={{ ...B, fontSize: 11, color: "rgba(255,255,255,0.38)" }}>{r.loc}</div>
               </motion.div>
             ))}
           </div>
@@ -362,150 +460,65 @@ export default function ApexElectricalClient() {
       </section>
 
       {/* ABOUT */}
-      <section id="about" style={{ background: C.card, borderTop: `1px solid ${C.border}`, borderBottom: `1px solid ${C.border}`, padding: "96px 28px" }}>
-        <div style={{ maxWidth: 1200, margin: "0 auto", display: "grid", gridTemplateColumns: "1fr 1fr", gap: 72, alignItems: "center" }}>
-          <motion.div initial={{ opacity: 0, x: -20 }} whileInView={{ opacity: 1, x: 0 }}
-            viewport={{ once: true, amount: 0.3 }} transition={{ duration: 0.55, ease: EXPO }}>
-            <div style={{ borderRadius: 20, overflow: "hidden", border: `1px solid ${C.border}` }}>
-              <img src={IMG.about} alt="Apex Electrical technician" style={{ width: "100%", display: "block", filter: "brightness(0.85)" }} />
+      <section id="about" style={{ background: CANVAS, padding: "80px 24px", borderTop: "1px solid rgba(255,255,255,0.06)" }}>
+        <div className="ax-about-grid" style={{ maxWidth: 1000, margin: "0 auto", display: "grid", gridTemplateColumns: "1fr 1fr", gap: 60, alignItems: "center" }}>
+          <div>
+            <h2 style={{ ...H, fontSize: "clamp(24px, 3.5vw, 38px)", color: "#fff", marginBottom: 16 }}>{t.aboutTitle}</h2>
+            <p style={{ ...B, fontSize: 14, color: "rgba(255,255,255,0.62)", lineHeight: 1.75, marginBottom: 20 }}>{t.aboutBody}</p>
+            <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 20 }}>
+              {t.areas.map((a, i) => (
+                <span key={i} className="ax-lg" style={{ ...B, borderRadius: 9999, padding: "5px 14px", fontSize: 11, color: "rgba(255,255,255,0.65)", fontWeight: 500 }}>{a}</span>
+              ))}
             </div>
-          </motion.div>
-
-          <motion.div initial={{ opacity: 0, x: 20 }} whileInView={{ opacity: 1, x: 0 }}
-            viewport={{ once: true, amount: 0.3 }} transition={{ duration: 0.55, delay: 0.1, ease: EXPO }}>
-            <p style={{ fontSize: 11, fontWeight: 700, color: C.ember, letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: 16 }}>{t.aboutLabel}</p>
-            <h2 style={{ fontSize: "clamp(28px, 3.5vw, 44px)", fontWeight: 700, color: C.text, marginBottom: 20, lineHeight: 1.05, letterSpacing: "-0.025em", whiteSpace: "pre-line" }}>{t.aboutTitle}</h2>
-            <p style={{ fontSize: 14, color: C.sec, lineHeight: 1.75, marginBottom: 28, fontWeight: 700 }}>{t.aboutBody}</p>
-            <ul style={{ listStyle: "none", display: "flex", flexDirection: "column", gap: 10, marginBottom: 32 }}>
-              {t.aboutBullets.map((b, i) => (
-                <li key={i} style={{ display: "flex", alignItems: "center", gap: 10, fontSize: 13, color: C.text, fontWeight: 700 }}>
-                  <span style={{ color: C.ember, fontSize: 12, flexShrink: 0 }}>●</span>
-                  {b}
+            <ul style={{ listStyle: "none", display: "flex", flexDirection: "column", gap: 8 }}>
+              {t.bullets.map((b, i) => (
+                <li key={i} style={{ ...B, fontSize: 13, color: "rgba(255,255,255,0.62)", display: "flex", alignItems: "center", gap: 8 }}>
+                  <span style={{ color: ACCENT, fontWeight: 700 }}>✓</span>{b}
                 </li>
               ))}
             </ul>
-            <a href={CALL_URL} style={{
-              display: "inline-block", background: C.ember, color: "#fff",
-              padding: "13px 28px", borderRadius: 15, fontSize: 13, fontWeight: 700,
-              textDecoration: "none", letterSpacing: "-0.01em",
-            }}>{t.aboutCta}</a>
-          </motion.div>
-        </div>
-      </section>
-
-      {/* REVIEWS */}
-      <section id="reviews" style={{ background: C.canvas, padding: "96px 28px" }}>
-        <div style={{ maxWidth: 1200, margin: "0 auto" }}>
-          <div style={{ marginBottom: 52 }}>
-            <h2 style={{ fontSize: "clamp(32px, 4vw, 52px)", fontWeight: 700, letterSpacing: "-0.025em", color: C.text }}>{t.revTitle}</h2>
-            <p style={{ color: C.sec, fontSize: 13, marginTop: 8, fontWeight: 700 }}>{t.revSub}</p>
           </div>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: 12 }}>
-            {t.reviews.map((r, i) => (
-              <motion.div key={i}
-                initial={{ opacity: 0, y: 16 }} whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true, amount: 0.15 }} transition={{ duration: 0.35, delay: i * 0.06 }}
-                style={{ background: C.card, border: `1px solid ${C.border}`, borderRadius: 20, padding: "24px" }}>
-                <div style={{ color: C.ember, fontSize: 12, letterSpacing: 3, marginBottom: 14 }}>★★★★★</div>
-                <p style={{ fontSize: 13, color: C.sec, lineHeight: 1.7, marginBottom: 20, fontWeight: 700 }}>&ldquo;{r.text}&rdquo;</p>
-                <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                  <div style={{ width: 32, height: 32, borderRadius: "50%", background: C.panel, border: `1px solid ${C.border}`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                    <span style={{ color: C.ember, fontSize: 13, fontWeight: 700 }}>{r.name[0]}</span>
-                  </div>
-                  <div>
-                    <div style={{ fontSize: 12, fontWeight: 700, color: C.text }}>{r.name}</div>
-                    <div style={{ fontSize: 10, color: C.ter, fontWeight: 700 }}>Verified Google Review</div>
-                  </div>
-                </div>
-              </motion.div>
-            ))}
+          <div className="ax-lg" style={{ borderRadius: "1.25rem", padding: "40px 32px", textAlign: "center" }}>
+            <div style={{ ...H, fontSize: 72, color: ACCENT, lineHeight: 1 }}>5.0★</div>
+            <div style={{ ...B, fontSize: 12, color: "rgba(255,255,255,0.45)", marginTop: 8, fontWeight: 500 }}>80 Google Reviews</div>
+            <a href={CALL_URL} style={{ ...B, display: "inline-block", marginTop: 24, background: ACCENT, color: "#fff", borderRadius: 9999, padding: "12px 24px", fontSize: 13, fontWeight: 600, textDecoration: "none" }}>{t.cta1}</a>
           </div>
         </div>
       </section>
 
-      {/* CONTACT */}
-      <section id="contact" style={{ background: C.panel, borderTop: `1px solid ${C.border}`, padding: "80px 28px" }}>
-        <div style={{ maxWidth: 720, margin: "0 auto", textAlign: "center" }}>
-          <h2 style={{ fontSize: "clamp(28px, 4vw, 52px)", fontWeight: 700, color: C.text, marginBottom: 14, letterSpacing: "-0.025em" }}>{t.contactTitle}</h2>
-          <p style={{ fontSize: 15, color: C.sec, marginBottom: 40, lineHeight: 1.6, fontWeight: 700 }}>{t.contactSub}</p>
-          <div style={{ display: "flex", flexWrap: "wrap", justifyContent: "center", gap: 12, marginBottom: 40 }}>
-            <a href={CALL_URL} style={{ background: C.ember, color: "#fff", padding: "14px 32px", borderRadius: 15, fontSize: 14, fontWeight: 700, textDecoration: "none", display: "flex", alignItems: "center", gap: 8 }}>
-              📞 {t.cta1}
-            </a>
-            <a href={WA_URL} target="_blank" rel="noopener noreferrer" style={{ background: "transparent", color: C.text, padding: "13px 32px", borderRadius: 15, fontSize: 14, fontWeight: 700, textDecoration: "none", border: `1px solid ${C.border}`, display: "flex", alignItems: "center", gap: 8 }}>
-              💬 {t.cta2}
-            </a>
-          </div>
-          <div style={{ display: "flex", flexWrap: "wrap", justifyContent: "center", gap: 32 }}>
-            {t.contactDetails.map((d, i) => (
-              <div key={i} style={{ textAlign: "center" }}>
-                <div style={{ fontSize: 18, marginBottom: 4 }}>{d.icon}</div>
-                <div style={{ fontSize: 12, color: C.ter, fontWeight: 700 }}>{d.txt}</div>
-              </div>
-            ))}
-          </div>
+      {/* FINAL CTA */}
+      <section id="contact" style={{ background: CANVAS, padding: "96px 24px", textAlign: "center", borderTop: "1px solid rgba(255,255,255,0.06)" }}>
+        <BlurText text={t.finalTitle}
+          style={{ ...H, fontSize: "clamp(36px, 5.5vw, 66px)", color: "#fff", lineHeight: 0.9, letterSpacing: "-3px", marginBottom: 16 }} />
+        <p style={{ ...B, fontSize: 14, color: "rgba(255,255,255,0.55)", marginBottom: 32, fontWeight: 300 }}>{t.finalSub}</p>
+        <div style={{ display: "flex", gap: 12, justifyContent: "center", flexWrap: "wrap", marginBottom: 20 }}>
+          <a href={CALL_URL} className="ax-lg-strong" style={{ ...B, borderRadius: 9999, padding: "14px 28px", fontSize: 15, fontWeight: 600, color: "#fff", textDecoration: "none" }}>{t.finalCta1}</a>
+          <a href={WA_URL} target="_blank" rel="noopener noreferrer" style={{ ...B, color: "rgba(255,255,255,0.6)", fontSize: 14, fontWeight: 500, textDecoration: "none", display: "flex", alignItems: "center" }}>{t.finalCta2}</a>
         </div>
+        <div style={{ ...B, fontSize: 12, color: "rgba(255,255,255,0.3)" }}>{t.finalInfo}</div>
       </section>
 
       {/* FOOTER */}
-      <footer style={{ background: C.canvas, borderTop: `1px solid ${C.border}`, padding: "36px 28px 104px" }}>
-        <div style={{ maxWidth: 1200, margin: "0 auto", display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 20 }}>
+      <footer style={{ background: CANVAS, borderTop: "1px solid rgba(255,255,255,0.08)", padding: "48px 24px 140px" }}>
+        <div style={{ maxWidth: 1100, margin: "0 auto", display: "flex", justifyContent: "space-between", flexWrap: "wrap", gap: 24 }}>
           <div>
-            <div style={{ fontSize: 14, fontWeight: 700, color: C.text, letterSpacing: "-0.02em", marginBottom: 4 }}>APEX ELECTRICAL</div>
-            <div style={{ fontSize: 12, color: C.ter, fontWeight: 700 }}>{t.footerTag}</div>
+            <div style={{ ...H, fontSize: 16, color: "#fff", marginBottom: 4 }}>Apex Electrical</div>
+            <div style={{ ...B, fontSize: 12, color: "rgba(255,255,255,0.35)" }}>{t.footerTag}</div>
           </div>
-          <div style={{ display: "flex", gap: 24, flexWrap: "wrap" }}>
-            {t.nav.map((lnk, i) => (
-              <button key={i} onClick={() => go(ids[i])} style={{
-                background: "none", border: "none", cursor: "pointer", color: C.ter,
-                fontSize: 12, fontWeight: 700, transition: "color 0.15s",
-              }}
-                onMouseEnter={e => (e.currentTarget.style.color = C.text)}
-                onMouseLeave={e => (e.currentTarget.style.color = C.ter)}
-              >{lnk}</button>
+          <div style={{ display: "flex", gap: 20, flexWrap: "wrap", alignItems: "center" }}>
+            {t.footerLinks.map((lnk, i) => (
+              <button key={i} onClick={() => go(ids[i])} style={{ ...B, background: "none", border: "none", cursor: "pointer", color: "rgba(255,255,255,0.38)", fontSize: 12, fontWeight: 500 }}>{lnk}</button>
             ))}
-          </div>
-        </div>
-        <div style={{ maxWidth: 1200, margin: "20px auto 0", borderTop: `1px solid ${C.border}`, paddingTop: 20 }}>
-          <div style={{ fontSize: 11, color: C.ter, fontWeight: 700, textAlign: "center" }}>
-            © {new Date().getFullYear()} Apex Electrical Contractors. All rights reserved.
+            <span style={{ ...B, fontSize: 12, color: "rgba(255,255,255,0.25)" }}>· (201) 555-0100 · © 2025</span>
           </div>
         </div>
       </footer>
 
-      {/* MOBILE STICKY */}
-      <div style={{
-        position: "fixed", bottom: 0, left: 0, right: 0, zIndex: 200,
-        background: C.card, borderTop: `1px solid ${C.border}`,
-        display: "grid", gridTemplateColumns: "1fr 1fr auto",
-        padding: "10px 12px", gap: 8,
-      }}>
-        <a href={CALL_URL} style={{ background: C.ember, color: "#fff", borderRadius: 15, padding: "12px 0", textAlign: "center", fontSize: 13, fontWeight: 700, textDecoration: "none" }}>
-          📞 {t.nav[0] === "Services" ? "Call Now" : "Llamar"}
-        </a>
-        <a href={WA_URL} target="_blank" rel="noopener noreferrer" style={{ background: "#25d366", color: "#fff", borderRadius: 15, padding: "12px 0", textAlign: "center", fontSize: 13, fontWeight: 700, textDecoration: "none" }}>
-          💬 WhatsApp
-        </a>
-        <button onClick={() => setLang(lang === "en" ? "es" : "en")} style={{ background: C.panel, border: `1px solid ${C.border}`, cursor: "pointer", color: C.sec, borderRadius: 999, padding: "12px 14px", fontWeight: 700, fontSize: 11 }}>
-          {t.switchLang}
-        </button>
+      {/* MOBILE STICKY BAR */}
+      <div className="ax-sticky" style={{ position: "fixed", bottom: 0, left: 0, right: 0, zIndex: 200, gridTemplateColumns: "1fr 1fr", height: 64, background: "rgba(17,17,17,0.9)", backdropFilter: "blur(20px)", borderTop: "1px solid rgba(255,255,255,0.08)" }}>
+        <a href={CALL_URL} style={{ background: ACCENT, color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 14, fontWeight: 600, textDecoration: "none", ...B }}>{t.callLabel}</a>
+        <a href={WA_URL} target="_blank" rel="noopener noreferrer" style={{ background: "#25D366", color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 14, fontWeight: 600, textDecoration: "none", ...B }}>{t.waLabel}</a>
       </div>
-
-      <style>{`
-        @media (max-width: 768px) {
-          .apex-desk { display: none !important; }
-          .apex-burger { display: block !important; }
-        }
-        @media (min-width: 769px) {
-          .apex-desk { display: flex !important; }
-          .apex-burger { display: none !important; }
-        }
-        @media (max-width: 680px) {
-          #about > div > div:first-child,
-          #about > div > div:last-child { grid-column: 1 / -1 !important; }
-          #about > div { grid-template-columns: 1fr !important; }
-        }
-      `}</style>
     </div>
   )
 }

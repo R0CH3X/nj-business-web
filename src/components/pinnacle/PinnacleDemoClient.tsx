@@ -1,1011 +1,522 @@
 "use client"
 
 import { useState, useEffect, useRef } from "react"
-import { motion, AnimatePresence, useInView, useMotionValue, animate } from "framer-motion"
+import { motion, useInView, useMotionValue, animate } from "framer-motion"
 
-// ─── Design tokens ─────────────────────────────────────────────────────────────
-const C = {
-  canvas: "#040506",
-  card: "#07080a",
-  border: "#363739",
-  primary: "#f0f0f0",
-  secondary: "#9c9c9d",
-  accent: "#3b9eff",
-  accentBright: "#6db8ff",
-} as const
+// ─── Video URLs (Higgsfield cinematic_studio_video_v2) ────────────────────────
+const HERO_VIDEO     = "https://d8j0ntlcm91z4.cloudfront.net/user_3FQadVcSPbghpSFvkjgD2Hf8Alt/hf_20260622_044703_df20c5bb-ea09-4eaf-bf17-c5dbfee2f748.mp4"
+const SERVICES_VIDEO = "https://d8j0ntlcm91z4.cloudfront.net/user_3FQadVcSPbghpSFvkjgD2Hf8Alt/hf_20260622_044714_37314e2a-ac8d-4198-8296-8277220f432e.mp4"
 
-const EXPO_OUT = [0.16, 1, 0.3, 1] as const
+// ─── Design tokens ────────────────────────────────────────────────────────────
+const ACCENT  = "#3b9eff"
+const CANVAS  = "#000000"
+const WA_URL  = "https://wa.me/12014194016"
+const CALL_URL = "tel:+12014194016"
 
-// ─── Assets ────────────────────────────────────────────────────────────────────
-const IMG = {
-  heroBg: "https://images.pexels.com/photos/8486944/pexels-photo-8486944.jpeg?auto=compress&w=1600",
-  emergency: "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=400&q=80",
-  sewer: "https://images.pexels.com/photos/8853502/pexels-photo-8853502.jpeg?auto=compress&w=400",
-  drain: "https://images.unsplash.com/photo-1581578731548-c64695cc6952?w=400&q=80",
-  waterHeater: "https://images.pexels.com/photos/6419128/pexels-photo-6419128.jpeg?auto=compress&w=400",
-  pipeRepair: "https://images.unsplash.com/photo-1607472586893-edb57bdc0e39?w=400&q=80",
-  leakDetection: "https://images.unsplash.com/photo-1565193566173-7a0ee3dbe261?w=400&q=80",
-  about: "https://images.unsplash.com/photo-1621905251189-08b45d6a269e?w=800&q=80",
-} as const
+// ─── FadingVideo (rAF-driven, no CSS transitions) ────────────────────────────
+const FADE_MS = 500
+const FADE_OUT_LEAD = 0.55
 
-// ─── Bilingual content ─────────────────────────────────────────────────────────
-const content = {
-  en: {
-    meta: {
-      title: "Pinnacle Plumbing Sewer & Drain | Ramsey NJ | 24/7 Emergency Plumber",
-      desc: "Pinnacle Plumbing Sewer & Drain in Ramsey, NJ — 24/7 emergency plumbing, drain cleaning, sewer repair & water heater installation. 5.0★ on Google with 142 reviews. Serving Bergen County.",
-    },
-    nav: {
-      cta: "Get a Quote",
-      phone: "(201) 419-4016",
-      links: [
-        { label: "Services", href: "#services" },
-        { label: "About", href: "#about" },
-        { label: "Reviews", href: "#reviews" },
-        { label: "Contact", href: "#contact" },
-      ],
-    },
-    hero: {
-      badge: "5.0  ★  142 Reviews on Google",
-      words: ["Bergen", "County's", "Most", "Trusted", "Plumber"],
-      accentFrom: 2,
-      sub: "24/7 emergency response · Licensed & insured · Serving Ramsey, NJ and all of North Jersey",
-      callCta: "Call Now",
-      waCta: "WhatsApp Us",
-    },
-    trust: [
-      { end: 142, suffix: "+", label: "Google Reviews" },
-      { end: 5.0, suffix: "★", label: "Star Rating", decimal: true },
-      { end: 24, suffix: "/7", label: "Emergency Service" },
-    ],
-    services: {
-      eyebrow: "What We Do",
-      title: "Full-Service Plumbing",
-      sub: "Residential and commercial plumbing across Bergen, Passaic and Morris counties.",
-      items: [
-        { img: IMG.emergency, title: "Emergency Plumbing", desc: "Burst pipes, flooding, no hot water. On-site within the hour, any time of day or night." },
-        { img: IMG.sewer, title: "Sewer Repair", desc: "Trenchless sewer repair and full line replacement. Camera inspection included." },
-        { img: IMG.drain, title: "Drain Cleaning", desc: "Hydro-jetting and professional snake service to clear any blockage, guaranteed." },
-        { img: IMG.waterHeater, title: "Water Heater Installation", desc: "Same-day replacement. Tank and tankless systems. All major brands serviced." },
-        { img: IMG.pipeRepair, title: "Pipe Repair & Repiping", desc: "Leak repairs and whole-home repiping with minimal disruption to your property." },
-        { img: IMG.leakDetection, title: "Leak Detection", desc: "Electronic detection finds hidden leaks before they become catastrophic damage." },
-      ],
-    },
-    about: {
-      eyebrow: "About Us",
-      title: "Family-Owned. Bergen County's Best.",
-      body: "Pinnacle Plumbing Sewer & Drain has been Ramsey's trusted plumbing company from day one. Every technician is licensed, insured, and background-checked. We show up when we say we will, price transparently, and stand behind every job.",
-      areaLabel: "Service Area",
-      areas: ["Bergen County", "Passaic County", "Morris County", "North Jersey"],
-      ratingLabel: "Google Reviews",
-    },
-    reviews: {
-      eyebrow: "Reviews",
-      title: "What Customers Say",
-      items: [
-        { text: "Pinnacle showed up at midnight on a Saturday and fixed a burst pipe in under 2 hours. Absolute lifesaver.", author: "James M.", location: "Ramsey, NJ" },
-        { text: "Best plumber in Bergen County. Fair pricing, no hidden fees, showed up exactly when they said they would.", author: "Sarah K.", location: "Paramus, NJ" },
-        { text: "Fast, professional, and clean. Replaced my water heater same day. I won't call anyone else.", author: "Mike T.", location: "Ridgewood, NJ" },
-      ],
-    },
-    cta: {
-      eyebrow: "Get Help Now",
-      title: "Need a Plumber Now?",
-      sub: "We pick up. Every call. Day or night.",
-      callCta: "Call (201) 419-4016",
-      waCta: "Message on WhatsApp",
-    },
-    footer: {
-      address: "Ramsey, NJ 07446",
-      region: "Bergen County, New Jersey",
-      hours: "24/7 Emergency Service",
-      rights: "© 2025 Pinnacle Plumbing Sewer & Drain. All rights reserved.",
-    },
-    bar: { call: "📞 Call", wa: "💬 WhatsApp" },
-    drawerLangSwitch: "Ver en Español",
-  },
-  es: {
-    meta: {
-      title: "Pinnacle Plumbing | Plomero 24/7 Ramsey NJ | Bergen County",
-      desc: "Pinnacle Plumbing Sewer & Drain en Ramsey, NJ — plomería de emergencia 24/7, limpieza de drenaje, reparación de alcantarillado e instalación de calentadores de agua. 5.0★ en Google.",
-    },
-    nav: {
-      cta: "Pedir Cotización",
-      phone: "(201) 419-4016",
-      links: [
-        { label: "Servicios", href: "#services" },
-        { label: "Nosotros", href: "#about" },
-        { label: "Reseñas", href: "#reviews" },
-        { label: "Contacto", href: "#contact" },
-      ],
-    },
-    hero: {
-      badge: "5.0  ★  142 Reseñas en Google",
-      words: ["El", "Plomero", "Más", "Confiable", "del", "Condado"],
-      accentFrom: 2,
-      sub: "Emergencias 24/7 · Con licencia y asegurado · Sirviendo Ramsey, NJ y el norte de New Jersey",
-      callCta: "Llamar Ahora",
-      waCta: "WhatsApp",
-    },
-    trust: [
-      { end: 142, suffix: "+", label: "Reseñas en Google" },
-      { end: 5.0, suffix: "★", label: "Calificación", decimal: true },
-      { end: 24, suffix: "/7", label: "Servicio de Emergencia" },
-    ],
-    services: {
-      eyebrow: "Lo Que Hacemos",
-      title: "Plomería Completa",
-      sub: "Servicios residenciales y comerciales en los condados de Bergen, Passaic y Morris.",
-      items: [
-        { img: IMG.emergency, title: "Plomería de Emergencia", desc: "Tuberías reventadas, inundaciones, sin agua caliente. Llegamos en una hora, cualquier hora." },
-        { img: IMG.sewer, title: "Reparación de Alcantarillado", desc: "Reparación sin zanjas y reemplazo completo. Inspección con cámara incluida." },
-        { img: IMG.drain, title: "Limpieza de Drenaje", desc: "Hidro-jetting y servicio snake para despejar cualquier obstrucción, garantizado." },
-        { img: IMG.waterHeater, title: "Instalación de Calentadores", desc: "Reemplazo el mismo día. Tanque y sin tanque. Todas las marcas principales." },
-        { img: IMG.pipeRepair, title: "Reparación de Tuberías", desc: "Reparaciones de fugas y reemplazo completo con mínima interrupción." },
-        { img: IMG.leakDetection, title: "Detección de Fugas", desc: "Detección electrónica localiza fugas ocultas antes de que causen daños mayores." },
-      ],
-    },
-    about: {
-      eyebrow: "Sobre Nosotros",
-      title: "Empresa Familiar. Lo Mejor de Bergen.",
-      body: "Pinnacle Plumbing Sewer & Drain ha sido la empresa de plomería de confianza en Ramsey desde el primer día. Cada técnico tiene licencia, seguro y verificación de antecedentes. Llegamos cuando decimos, precios transparentes y respaldamos cada trabajo.",
-      areaLabel: "Área de Servicio",
-      areas: ["Condado de Bergen", "Condado de Passaic", "Condado de Morris", "Norte de Jersey"],
-      ratingLabel: "Reseñas en Google",
-    },
-    reviews: {
-      eyebrow: "Reseñas",
-      title: "Lo Que Dicen Nuestros Clientes",
-      items: [
-        { text: "Pinnacle llegó a medianoche un sábado y reparó una tubería reventada en menos de 2 horas. Un salvavidas.", author: "James M.", location: "Ramsey, NJ" },
-        { text: "El mejor plomero del Condado de Bergen. Precios justos, sin costos ocultos, llegaron exactamente cuando dijeron.", author: "Sarah K.", location: "Paramus, NJ" },
-        { text: "Rápido, profesional y limpio. Reemplazó mi calentador el mismo día. No llamaré a nadie más.", author: "Mike T.", location: "Ridgewood, NJ" },
-      ],
-    },
-    cta: {
-      eyebrow: "Ayuda Inmediata",
-      title: "¿Necesita un Plomero Ahora?",
-      sub: "Contestamos cada llamada. Día o noche.",
-      callCta: "Llamar (201) 419-4016",
-      waCta: "Mensaje por WhatsApp",
-    },
-    footer: {
-      address: "Ramsey, NJ 07446",
-      region: "Condado de Bergen, New Jersey",
-      hours: "Servicio de Emergencia 24/7",
-      rights: "© 2025 Pinnacle Plumbing Sewer & Drain. Todos los derechos reservados.",
-    },
-    bar: { call: "📞 Llamar", wa: "💬 WhatsApp" },
-    drawerLangSwitch: "View in English",
-  },
-} as const
+function FadingVideo({ src, className, style }: { src: string; className?: string; style?: React.CSSProperties }) {
+  const videoRef    = useRef<HTMLVideoElement>(null)
+  const rafRef      = useRef<number>(0)
+  const fadingOutRef = useRef(false)
 
-type Lang = keyof typeof content
-
-// ─── Helpers ───────────────────────────────────────────────────────────────────
-
-function Counter({ end, suffix, decimal = false }: { end: number; suffix: string; decimal?: boolean }) {
-  const ref = useRef<HTMLSpanElement>(null)
-  const inView = useInView(ref, { once: true, amount: 0.3 })
-  const count = useMotionValue(0)
-  const [display, setDisplay] = useState(decimal ? "0.0" : "0")
+  function fadeTo(target: number) {
+    cancelAnimationFrame(rafRef.current)
+    const video = videoRef.current
+    if (!video) return
+    const start = performance.now()
+    const from  = parseFloat(video.style.opacity) || 0
+    function step(now: number) {
+      const p = Math.min((now - start) / FADE_MS, 1)
+      video!.style.opacity = String(from + (target - from) * p)
+      if (p < 1) rafRef.current = requestAnimationFrame(step)
+    }
+    rafRef.current = requestAnimationFrame(step)
+  }
 
   useEffect(() => {
-    if (!inView) return
-    const controls = animate(count, end, {
-      duration: 1.8,
-      ease: [0.16, 1, 0.3, 1],
-      onUpdate(latest) {
-        setDisplay(decimal ? latest.toFixed(1) : String(Math.floor(latest)))
-      },
-    })
-    return () => controls.stop()
-  }, [inView, count, end, decimal])
+    const video = videoRef.current
+    if (!video) return
+    video.style.opacity = "0"
+    const onLoaded     = () => { video.play(); fadeTo(1) }
+    const onTimeUpdate = () => {
+      if (!fadingOutRef.current &&
+          video.duration - video.currentTime <= FADE_OUT_LEAD &&
+          video.duration - video.currentTime > 0) {
+        fadingOutRef.current = true
+        fadeTo(0)
+      }
+    }
+    const onEnded = () => {
+      video.style.opacity = "0"
+      setTimeout(() => {
+        video.currentTime = 0
+        video.play()
+        fadingOutRef.current = false
+        fadeTo(1)
+      }, 100)
+    }
+    video.addEventListener("loadeddata", onLoaded)
+    video.addEventListener("timeupdate", onTimeUpdate)
+    video.addEventListener("ended", onEnded)
+    return () => {
+      cancelAnimationFrame(rafRef.current)
+      video.removeEventListener("loadeddata", onLoaded)
+      video.removeEventListener("timeupdate", onTimeUpdate)
+      video.removeEventListener("ended", onEnded)
+    }
+  }, [src])
 
   return (
-    <span ref={ref}>{display}{suffix}</span>
+    <video ref={videoRef} src={src} autoPlay muted playsInline preload="auto" loop={false}
+      className={className} style={{ opacity: 0, ...style }} />
   )
 }
 
-function Eyebrow({ children }: { children: React.ReactNode }) {
+// ─── BlurText (word-by-word IntersectionObserver) ────────────────────────────
+function BlurText({ text, className, style }: { text: string; className?: string; style?: React.CSSProperties }) {
+  const ref = useRef<HTMLParagraphElement>(null)
+  const [visible, setVisible] = useState(false)
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => { if (entry.isIntersecting) setVisible(true) },
+      { threshold: 0.1 }
+    )
+    if (ref.current) observer.observe(ref.current)
+    return () => observer.disconnect()
+  }, [])
+  const words = text.split(" ")
   return (
-    <p style={{
-      fontSize: "11px", fontWeight: 500, letterSpacing: "0.1em",
-      textTransform: "uppercase", color: C.accent,
-      marginBottom: "16px", fontFamily: "'Inter', sans-serif",
-    }}>
-      {children}
+    <p ref={ref} className={className} style={{ display: "flex", flexWrap: "wrap", justifyContent: "center", rowGap: "0.1em", ...style }}>
+      {words.map((word, i) => (
+        <motion.span key={i}
+          initial={{ filter: "blur(10px)", opacity: 0, y: 50 }}
+          animate={visible ? { filter: ["blur(10px)", "blur(5px)", "blur(0px)"], opacity: [0, 0.5, 1], y: [50, -5, 0] } : {}}
+          transition={{ duration: 0.7, times: [0, 0.5, 1], ease: "easeOut", delay: (i * 100) / 1000 }}
+          style={{ display: "inline-block", marginRight: "0.28em" }}
+        >{word}</motion.span>
+      ))}
     </p>
   )
 }
 
-// ─── Main page ─────────────────────────────────────────────────────────────────
-export default function PinnacleDemoClient() {
-  const [lang, setLang] = useState<Lang>("en")
-  const [menuOpen, setMenuOpen] = useState(false)
-  const d = content[lang]
-
-  const TEL = "tel:+12014194016"
-  const WA = "https://wa.me/12014194016"
-
-  // Persist language preference
+// ─── Counter ─────────────────────────────────────────────────────────────────
+const EXPO = [0.16, 1, 0.3, 1] as const
+function Counter({ to, suffix }: { to: number; suffix: string }) {
+  const ref = useRef<HTMLSpanElement>(null)
+  const inV = useInView(ref, { once: true, amount: 0.4 })
+  const mv  = useMotionValue(0)
+  const [d, setD] = useState("0")
   useEffect(() => {
-    const saved = localStorage.getItem("pp-lang") as Lang | null
-    if (saved === "en" || saved === "es") setLang(saved)
+    if (!inV) return
+    const c = animate(mv, to, { duration: 1.6, ease: EXPO as [number,number,number,number], onUpdate: v => setD(String(Math.floor(v))) })
+    return () => c.stop()
+  }, [inV, mv, to])
+  return <span ref={ref}>{d}{suffix}</span>
+}
+
+// ─── Content ──────────────────────────────────────────────────────────────────
+type Lang = "en" | "es"
+
+const copy = {
+  en: {
+    badge:      "5.0★ · 142 Reviews on Google",
+    h1:         "Bergen County's Emergency Plumber",
+    sub:        "Burst pipe? No hot water? On-site within the hour — day or night. Serving Ramsey NJ and Bergen County.",
+    cta1:       "📞 Call (201) 419-4016",
+    cta2:       "💬 WhatsApp",
+    nav:        ["Services", "Reviews", "About", "Contact"],
+    navCta:     "📞 (201) 419-4016",
+    trustItems: ["142+ Google Reviews", "5.0★ Rating", "24/7 Emergency"],
+    svcTitle:   "Every Plumbing Problem. Solved.",
+    svcs: [
+      { icon: "🔧", title: "Emergency Plumbing",  desc: "Burst pipes, flooding, no hot water. On-site within the hour, any time.",          cta: "Book Now" },
+      { icon: "🔩", title: "Sewer Repair",        desc: "Trenchless repair and full line replacement. Camera inspection included.",           cta: "Book Now" },
+      { icon: "🌊", title: "Drain Cleaning",      desc: "Hydro-jetting and snake service to clear any blockage, guaranteed.",                cta: "Book Now" },
+      { icon: "♨️", title: "Water Heater",        desc: "Same-day replacement. Tank and tankless. All major brands.",                        cta: "Book Now" },
+      { icon: "🔨", title: "Pipe Repair",         desc: "Leak repairs and whole-home repiping with minimal disruption.",                     cta: "Book Now" },
+      { icon: "🔍", title: "Leak Detection",      desc: "Electronic detection finds hidden leaks before catastrophic damage.",                cta: "Book Now" },
+    ],
+    midTitle:   "Pipes Don't Wait. Neither Do We.",
+    midSub:     "We answer 24/7 — no voicemail, no waiting",
+    midCta:     "📞 Call (201) 419-4016",
+    revTitle:   "What Bergen County Says",
+    revSub:     "142+ verified Google reviews",
+    reviews: [
+      { name: "James M.", loc: "Ramsey NJ",     text: "Showed up at midnight on a Saturday and fixed a burst pipe in under 2 hours. Absolute lifesaver." },
+      { name: "Sarah K.", loc: "Paramus NJ",    text: "Best plumber in Bergen County. Fair pricing, no hidden fees, showed up exactly when they said they would." },
+      { name: "Mike T.",  loc: "Ridgewood NJ",  text: "Fast, professional, and clean. Replaced my water heater same day. Won't call anyone else." },
+      { name: "David R.", loc: "Hackensack NJ", text: "Called at 2am for a burst pipe. There in 45 minutes. Incredible response time, incredible work." },
+    ],
+    aboutTitle:  "Family-Owned. Bergen County's Best.",
+    aboutBody:   "Pinnacle Plumbing Sewer & Drain has been Ramsey's trusted plumbing company from day one. Licensed, insured, background-checked.",
+    areas:       ["Bergen County", "Passaic County", "Morris County", "North Jersey"],
+    bullets:     ["Licensed & Insured in NJ", "Same-Day Service Available", "5.0★ Rated on Google", "142+ Happy Customers"],
+    finalTitle:  "Need a Plumber Now?",
+    finalSub:    "We pick up. Every call. Day or night.",
+    finalCta1:   "📞 Call (201) 419-4016",
+    finalCta2:   "💬 Message on WhatsApp",
+    finalInfo:   "Ramsey, NJ 07446 · Emergency 24/7",
+    footerTag:   "Ramsey NJ 07446",
+    footerLinks: ["Services", "About", "Reviews", "Contact"],
+    switchLang:  "ES",
+    callLabel:   "📞 Call",
+    waLabel:     "💬 WhatsApp",
+  },
+  es: {
+    badge:      "5.0★ · 142 Reseñas en Google",
+    h1:         "El Plomero de Emergencia del Condado Bergen",
+    sub:        "¿Tubería reventada? ¿Sin agua caliente? En su lugar en menos de una hora — de día o de noche. Sirviendo Ramsey NJ y el Condado Bergen.",
+    cta1:       "📞 Llamar (201) 419-4016",
+    cta2:       "💬 WhatsApp",
+    nav:        ["Servicios", "Reseñas", "Nosotros", "Contacto"],
+    navCta:     "📞 (201) 419-4016",
+    trustItems: ["142+ Reseñas en Google", "Calificación 5.0★", "Emergencias 24/7"],
+    svcTitle:   "Cada Problema de Plomería. Resuelto.",
+    svcs: [
+      { icon: "🔧", title: "Plomería de Emergencia",      desc: "Tuberías reventadas, inundaciones, sin agua caliente. En el lugar en menos de una hora.",       cta: "Reservar" },
+      { icon: "🔩", title: "Reparación de Alcantarilla",  desc: "Reparación sin trinchera y reemplazo completo de líneas. Inspección por cámara incluida.",        cta: "Reservar" },
+      { icon: "🌊", title: "Limpieza de Drenajes",        desc: "Servicio de hydro-jet y serpiente para eliminar cualquier obstrucción, garantizado.",               cta: "Reservar" },
+      { icon: "♨️", title: "Calentador de Agua",          desc: "Reemplazo el mismo día. Tanque y sin tanque. Todas las marcas principales.",                        cta: "Reservar" },
+      { icon: "🔨", title: "Reparación de Tuberías",      desc: "Reparaciones de fugas y re-tubería completa del hogar con mínima interrupción.",                    cta: "Reservar" },
+      { icon: "🔍", title: "Detección de Fugas",          desc: "Detección electrónica encuentra fugas ocultas antes de que causen daños catastróficos.",             cta: "Reservar" },
+    ],
+    midTitle:   "Las Tuberías No Esperan. Nosotros Tampoco.",
+    midSub:     "Respondemos 24/7 — sin buzón de voz, sin espera",
+    midCta:     "📞 Llamar (201) 419-4016",
+    revTitle:   "Lo Que Dice el Condado Bergen",
+    revSub:     "Más de 142 reseñas verificadas en Google",
+    reviews: [
+      { name: "James M.", loc: "Ramsey NJ",     text: "Llegó a medianoche un sábado y arregló una tubería reventada en menos de 2 horas. Un verdadero salvavidas." },
+      { name: "Sarah K.", loc: "Paramus NJ",    text: "El mejor plomero del Condado Bergen. Precios justos, sin cargos ocultos, llegó exactamente cuando dijo." },
+      { name: "Mike T.",  loc: "Ridgewood NJ",  text: "Rápido, profesional y limpio. Reemplazó mi calentador de agua el mismo día. No llamaré a nadie más." },
+      { name: "David R.", loc: "Hackensack NJ", text: "Llamé a las 2am por una tubería reventada. Llegó en 45 minutos. Tiempo de respuesta increíble, trabajo increíble." },
+    ],
+    aboutTitle:  "Familia Propietaria. Lo Mejor del Condado Bergen.",
+    aboutBody:   "Pinnacle Plumbing Sewer & Drain ha sido la empresa de plomería de confianza de Ramsey desde el primer día. Con licencia, asegurados y verificados.",
+    areas:       ["Condado Bergen", "Condado Passaic", "Condado Morris", "Norte de Jersey"],
+    bullets:     ["Con Licencia y Asegurados en NJ", "Servicio el Mismo Día Disponible", "Calificación 5.0★ en Google", "142+ Clientes Satisfechos"],
+    finalTitle:  "¿Necesita un Plomero Ahora?",
+    finalSub:    "Contestamos. Cada llamada. Día y noche.",
+    finalCta1:   "📞 Llamar (201) 419-4016",
+    finalCta2:   "💬 Mensaje en WhatsApp",
+    finalInfo:   "Ramsey, NJ 07446 · Emergencias 24/7",
+    footerTag:   "Ramsey NJ 07446",
+    footerLinks: ["Servicios", "Nosotros", "Reseñas", "Contacto"],
+    switchLang:  "EN",
+    callLabel:   "📞 Llamar",
+    waLabel:     "💬 WhatsApp",
+  },
+}
+
+// ─── Styles ───────────────────────────────────────────────────────────────────
+const FONT_URL = "https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Barlow:wght@300;400;500;600&display=swap"
+
+const LIQUID_GLASS_CSS = `
+.pp-lg {
+  background: rgba(255,255,255,0.01);
+  background-blend-mode: luminosity;
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  border: none;
+  box-shadow: inset 0 1px 1px rgba(255,255,255,0.1);
+  position: relative;
+  overflow: hidden;
+}
+.pp-lg::before {
+  content: "";
+  position: absolute; inset: 0;
+  border-radius: inherit;
+  padding: 1.4px;
+  background: linear-gradient(180deg,
+    rgba(255,255,255,0.45) 0%,
+    rgba(255,255,255,0.15) 20%,
+    rgba(255,255,255,0) 40%,
+    rgba(255,255,255,0) 60%,
+    rgba(255,255,255,0.15) 80%,
+    rgba(255,255,255,0.45) 100%);
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+}
+.pp-lg-strong {
+  background: rgba(255,255,255,0.01);
+  backdrop-filter: blur(50px);
+  -webkit-backdrop-filter: blur(50px);
+  box-shadow: 4px 4px 4px rgba(0,0,0,0.05), inset 0 1px 1px rgba(255,255,255,0.15);
+  position: relative;
+  overflow: hidden;
+}
+.pp-lg-strong::before {
+  content: "";
+  position: absolute; inset: 0;
+  border-radius: inherit; padding: 1.4px;
+  background: linear-gradient(180deg,
+    rgba(255,255,255,0.5) 0%,
+    rgba(255,255,255,0.2) 20%,
+    rgba(255,255,255,0) 40%,
+    rgba(255,255,255,0) 60%,
+    rgba(255,255,255,0.2) 80%,
+    rgba(255,255,255,0.5) 100%);
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+}
+`
+
+const H: React.CSSProperties = { fontFamily: "'Instrument Serif', serif", fontStyle: "italic" }
+const B: React.CSSProperties = { fontFamily: "'Barlow', sans-serif" }
+
+// ─── Main Component ───────────────────────────────────────────────────────────
+export default function PinnacleDemoClient() {
+  const [lang, setLang]         = useState<Lang>("en")
+  const [scrolled, setScrolled] = useState(false)
+  const [menuOpen, setMenuOpen] = useState(false)
+  const t = copy[lang]
+
+  useEffect(() => {
+    const fn = () => setScrolled(window.scrollY > 40)
+    window.addEventListener("scroll", fn, { passive: true })
+    return () => window.removeEventListener("scroll", fn)
   }, [])
 
-  // Sync document title + meta description
-  useEffect(() => {
-    document.title = d.meta.title
-    const el = document.querySelector('meta[name="description"]')
-    if (el) el.setAttribute("content", d.meta.desc)
-  }, [lang, d.meta])
-
-  const toggleLang = () => {
-    const next: Lang = lang === "en" ? "es" : "en"
-    setLang(next)
-    localStorage.setItem("pp-lang", next)
-    setMenuOpen(false)
-  }
+  const ids = ["services", "reviews", "about", "contact"]
+  const go  = (id: string) => { document.getElementById(id)?.scrollIntoView({ behavior: "smooth" }); setMenuOpen(false) }
 
   return (
-    <div style={{ background: C.canvas, color: C.primary, fontFamily: "'Inter', sans-serif", overflowX: "hidden" }}>
-
-      {/* ─── GLOBAL STYLES ───────────────────────────────────────────────── */}
+    <div style={{ ...B, background: CANVAS, color: "#fff", overflowX: "hidden", minHeight: "100vh" }}>
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Inter:wght@400;500;600;700&display=swap');
-        *, *::before, *::after { box-sizing: border-box; }
-        html { scroll-behavior: smooth; -webkit-font-smoothing: antialiased; }
-        body { margin: 0; padding-bottom: 68px; }
-        @media (min-width: 768px) { body { padding-bottom: 0; } }
-
-        .svc-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1px; background: ${C.border}; }
-        @media (max-width: 900px)  { .svc-grid { grid-template-columns: repeat(2, 1fr); } }
-        @media (max-width: 600px)  { .svc-grid { grid-template-columns: 1fr; } }
-
-        .about-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 80px; align-items: center; }
-        @media (max-width: 900px) { .about-grid { grid-template-columns: 1fr; gap: 48px; } }
-
-        .reviews-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; }
-        @media (max-width: 900px) { .reviews-grid { grid-template-columns: 1fr; } }
-
-        .trust-grid { display: grid; grid-template-columns: repeat(3, 1fr); }
-        .trust-sep { border-right: 1px solid ${C.border}; }
-        @media (max-width: 500px) {
-          .trust-grid { grid-template-columns: 1fr; }
-          .trust-sep { border-right: none; border-bottom: 1px solid ${C.border}; }
-        }
-
-        .nav-links  { display: flex; }
-        .nav-phone  { display: block; }
-        .nav-cta    { display: flex; }
-        .nav-burger { display: none; }
+        @import url('${FONT_URL}');
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        html { scroll-behavior: smooth; }
+        ${LIQUID_GLASS_CSS}
+        .pp-desk { display: flex; }
+        .pp-burger { display: none; }
         @media (max-width: 768px) {
-          .nav-links { display: none !important; }
-          .nav-phone { display: none !important; }
-          .nav-cta   { display: none !important; }
-          .nav-burger { display: flex !important; }
+          .pp-desk { display: none !important; }
+          .pp-burger { display: block !important; }
+          .pp-hero-h1 { font-size: clamp(34px, 9vw, 56px) !important; letter-spacing: -2px !important; }
+          .pp-svc-grid { grid-template-columns: 1fr !important; }
+          .pp-about-grid { grid-template-columns: 1fr !important; }
+          .pp-rev-grid { grid-template-columns: 1fr !important; }
+          .pp-sticky { display: grid !important; }
         }
-
-        .mobile-bar { display: none !important; }
-        @media (max-width: 767px) { .mobile-bar { display: grid !important; } }
-
-        img { display: block; }
-        a { color: inherit; }
+        @media (min-width: 769px) { .pp-sticky { display: none !important; } }
       `}</style>
 
-      {/* ─── NAV ─────────────────────────────────────────────────────────── */}
-      <motion.header
-        initial={{ y: -60, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-        transition={{ duration: 0.55, ease: EXPO_OUT }}
-        style={{
-          position: "sticky", top: 0, zIndex: 100,
-          height: "59px", display: "flex", alignItems: "center",
-          backdropFilter: "blur(25px)", WebkitBackdropFilter: "blur(25px)",
-          background: "rgba(4,5,6,0.82)",
-          borderBottom: `1px solid ${C.border}`,
-          padding: "0 32px",
-        }}
-      >
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", width: "100%", maxWidth: "1280px", margin: "0 auto" }}>
-
-          {/* Logo */}
-          <a href="#" aria-label="Pinnacle Plumbing home" style={{ textDecoration: "none", display: "flex", alignItems: "center", gap: "10px" }}>
-            <svg width="28" height="28" viewBox="0 0 28 28" fill="none" aria-hidden="true">
-              <rect width="28" height="28" rx="7" fill={C.accent} />
-              <path d="M14 6 L17 11 L22 11 L18 15 L20 20 L14 17 L8 20 L10 15 L6 11 L11 11 Z" fill="white" fillRule="evenodd" />
-            </svg>
-            <span style={{ fontSize: "15px", fontWeight: 600, color: C.primary, letterSpacing: "-0.3px" }}>
-              Pinnacle <span style={{ color: C.secondary, fontWeight: 400 }}>Plumbing</span>
-            </span>
-          </a>
-
-          {/* Center nav links */}
-          <nav className="nav-links" aria-label="Primary navigation" style={{ gap: "32px", alignItems: "center" }}>
-            {d.nav.links.map((l) => (
-              <a key={l.href} href={l.href}
-                style={{ fontSize: "14px", color: C.secondary, textDecoration: "none", fontWeight: 500, transition: "color 0.15s" }}
-                onMouseEnter={(e) => { e.currentTarget.style.color = C.primary }}
-                onMouseLeave={(e) => { e.currentTarget.style.color = C.secondary }}
-              >
-                {l.label}
-              </a>
+      {/* NAV */}
+      <nav style={{
+        position: "fixed", top: 16, left: "50%", transform: "translateX(-50%)",
+        zIndex: 100, maxWidth: 900, width: "calc(100% - 32px)",
+        borderRadius: 9999, padding: "10px 20px",
+        background: scrolled ? "rgba(0,0,0,0.75)" : "transparent",
+        backdropFilter: scrolled ? "blur(20px)" : "none",
+        transition: "background 0.3s, backdrop-filter 0.3s",
+      }} className={scrolled ? "" : "pp-lg"}>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+            <div style={{ width: 32, height: 32, borderRadius: "50%", background: ACCENT, display: "flex", alignItems: "center", justifyContent: "center" }}>
+              <span style={{ ...H, fontSize: 13, color: "#fff" }}>PP</span>
+            </div>
+            <span style={{ ...B, fontSize: 13, fontWeight: 600, color: "#fff" }}>Pinnacle Plumbing</span>
+          </div>
+          <div className="pp-desk" style={{ alignItems: "center", gap: 28 }}>
+            {t.nav.map((lnk, i) => (
+              <button key={i} onClick={() => go(ids[i])} style={{ ...B, background: "none", border: "none", cursor: "pointer", fontSize: 13, fontWeight: 500, color: "rgba(255,255,255,0.7)" }}
+                onMouseEnter={e => (e.currentTarget.style.color = "#fff")}
+                onMouseLeave={e => (e.currentTarget.style.color = "rgba(255,255,255,0.7)")}
+              >{lnk}</button>
             ))}
-          </nav>
-
-          {/* Right cluster */}
-          <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-            <a className="nav-phone" href={TEL}
-              style={{ fontSize: "13px", color: C.secondary, textDecoration: "none", fontWeight: 500, transition: "color 0.15s" }}
-              onMouseEnter={(e) => { e.currentTarget.style.color = C.primary }}
-              onMouseLeave={(e) => { e.currentTarget.style.color = C.secondary }}
-            >
-              {d.nav.phone}
-            </a>
-
-            <button
-              onClick={toggleLang}
-              aria-label="Toggle language"
-              style={{
-                background: "transparent", border: `1px solid ${C.border}`, borderRadius: "6px",
-                color: C.secondary, fontSize: "12px", fontWeight: 500, padding: "5px 10px",
-                cursor: "pointer", letterSpacing: "0.5px", transition: "border-color 0.15s, color 0.15s",
-              }}
-              onMouseEnter={(e) => { e.currentTarget.style.borderColor = C.accent; e.currentTarget.style.color = C.primary }}
-              onMouseLeave={(e) => { e.currentTarget.style.borderColor = C.border; e.currentTarget.style.color = C.secondary }}
-            >
-              {lang === "en" ? "EN | ES" : "ES | EN"}
-            </button>
-
-            <motion.a
-              href={TEL}
-              className="nav-cta"
-              whileHover={{ scale: 1.04 }}
-              whileTap={{ scale: 0.97 }}
-              transition={{ duration: 0.15 }}
-              style={{
-                background: C.accent, borderRadius: "6px", color: "#fff",
-                fontSize: "13px", fontWeight: 600, padding: "8px 16px",
-                textDecoration: "none", alignItems: "center", gap: "6px",
-              }}
-            >
-              {d.nav.cta}
-            </motion.a>
-
-            <button
-              className="nav-burger"
-              onClick={() => setMenuOpen(true)}
-              aria-label="Open navigation menu"
-              aria-expanded={menuOpen}
-              style={{ background: "transparent", border: "none", color: C.primary, cursor: "pointer", padding: "4px" }}
-            >
-              <svg width="22" height="22" viewBox="0 0 22 22" fill="none" aria-hidden="true">
-                <line x1="3" y1="7"  x2="19" y2="7"  stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-                <line x1="3" y1="11" x2="19" y2="11" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-                <line x1="3" y1="15" x2="19" y2="15" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-              </svg>
-            </button>
+            <button onClick={() => setLang(lang === "en" ? "es" : "en")} style={{ ...B, background: "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.15)", borderRadius: 9999, cursor: "pointer", color: "rgba(255,255,255,0.7)", fontSize: 11, fontWeight: 500, padding: "4px 10px" }}>{t.switchLang}</button>
+            <a href={CALL_URL} style={{ ...B, background: ACCENT, color: "#fff", padding: "8px 18px", borderRadius: 9999, fontSize: 13, fontWeight: 600, textDecoration: "none" }}>{t.navCta}</a>
           </div>
+          <button className="pp-burger" onClick={() => setMenuOpen(!menuOpen)} style={{ background: "none", border: "none", cursor: "pointer", color: "#fff", fontSize: 22 }}>☰</button>
         </div>
-      </motion.header>
-
-      {/* ─── MOBILE DRAWER ───────────────────────────────────────────────── */}
-      <AnimatePresence>
         {menuOpen && (
-          <>
-            <motion.div
-              key="backdrop"
-              initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-              transition={{ duration: 0.2 }}
-              onClick={() => setMenuOpen(false)}
-              style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.72)", zIndex: 199, backdropFilter: "blur(4px)" }}
-              aria-hidden="true"
-            />
-            <motion.div
-              key="drawer"
-              role="dialog" aria-modal="true" aria-label="Navigation menu"
-              initial={{ x: "100%" }} animate={{ x: 0 }} exit={{ x: "100%" }}
-              transition={{ duration: 0.3, ease: [0.4, 0, 0.2, 1] }}
-              style={{
-                position: "fixed", top: 0, right: 0, bottom: 0, width: "288px",
-                background: C.card, zIndex: 200, padding: "24px 28px",
-                borderLeft: `1px solid ${C.border}`,
-                display: "flex", flexDirection: "column",
-              }}
-            >
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "40px" }}>
-                <span style={{ fontSize: "14px", fontWeight: 600, color: C.primary, letterSpacing: "-0.2px" }}>Menu</span>
-                <button
-                  onClick={() => setMenuOpen(false)}
-                  aria-label="Close menu"
-                  style={{ background: "transparent", border: "none", color: C.secondary, cursor: "pointer", padding: "4px", display: "flex" }}
-                >
-                  <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true">
-                    <path d="M4 4l12 12M16 4L4 16" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-                  </svg>
-                </button>
-              </div>
-
-              <nav aria-label="Mobile navigation" style={{ flex: 1, display: "flex", flexDirection: "column", gap: "0" }}>
-                {d.nav.links.map((l, i) => (
-                  <a key={l.href} href={l.href} onClick={() => setMenuOpen(false)}
-                    style={{
-                      fontSize: "20px", fontWeight: 500, color: C.primary, textDecoration: "none",
-                      padding: "18px 0",
-                      borderBottom: i < d.nav.links.length - 1 ? `1px solid ${C.border}` : undefined,
-                      fontFamily: "'DM Serif Display', serif",
-                    }}
-                  >
-                    {l.label}
-                  </a>
-                ))}
-              </nav>
-
-              <div style={{ display: "flex", flexDirection: "column", gap: "10px", paddingTop: "32px", borderTop: `1px solid ${C.border}`, marginTop: "24px" }}>
-                <a
-                  href={TEL}
-                  onClick={() => setMenuOpen(false)}
-                  style={{
-                    display: "flex", alignItems: "center", justifyContent: "center",
-                    background: C.accent, borderRadius: "8px", color: "#fff",
-                    fontWeight: 600, fontSize: "15px", padding: "15px", textDecoration: "none",
-                  }}
-                >
-                  📞 {d.nav.phone}
-                </a>
-                <button
-                  onClick={toggleLang}
-                  style={{
-                    background: "transparent", border: `1px solid ${C.border}`, borderRadius: "8px",
-                    color: C.secondary, fontSize: "13px", fontWeight: 500, padding: "11px", cursor: "pointer",
-                  }}
-                >
-                  {d.drawerLangSwitch}
-                </button>
-              </div>
-            </motion.div>
-          </>
-        )}
-      </AnimatePresence>
-
-      <main>
-        {/* ─── HERO ────────────────────────────────────────────────────────── */}
-        <section
-          aria-label="Hero"
-          style={{ position: "relative", minHeight: "100vh", display: "flex", alignItems: "center", overflow: "hidden" }}
-        >
-          {/* Background photo */}
-          <img
-            src={IMG.heroBg}
-            alt=""
-            aria-hidden="true"
-            loading="eager"
-            width={1600} height={900}
-            style={{
-              position: "absolute", inset: 0, width: "100%", height: "100%",
-              objectFit: "cover", objectPosition: "center 30%",
-              opacity: 0.22,
-            }}
-          />
-
-          {/* Gradient frame */}
-          <div aria-hidden="true" style={{
-            position: "absolute", inset: 0,
-            background: `linear-gradient(to bottom,
-              ${C.canvas} 0%,
-              rgba(4,5,6,0.2) 25%,
-              rgba(4,5,6,0.15) 60%,
-              ${C.canvas} 100%)`,
-          }} />
-
-          {/* Radial atmospheric glow — pulsing */}
-          <motion.div
-            aria-hidden="true"
-            animate={{ opacity: [0.5, 0.7, 0.5] }}
-            transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
-            style={{
-              position: "absolute",
-              top: "50%", left: "40%",
-              transform: "translate(-50%, -50%)",
-              width: "860px", height: "480px",
-              background: `radial-gradient(ellipse, rgba(59,158,255,0.13) 0%, transparent 70%)`,
-              pointerEvents: "none",
-            }}
-          />
-
-          {/* Content — left-aligned */}
-          <div style={{ position: "relative", zIndex: 1, width: "100%", maxWidth: "1280px", margin: "0 auto", padding: "120px 32px 80px" }}>
-
-            {/* Badge */}
-            <motion.div
-              initial={{ y: 12 }}
-              animate={{ y: 0 }}
-              transition={{ duration: 0.5, delay: 0.1, ease: EXPO_OUT }}
-              style={{
-                display: "inline-flex", alignItems: "center", gap: "10px",
-                border: `1px solid rgba(54,55,57,0.7)`, borderRadius: "100px",
-                padding: "6px 16px", fontSize: "13px", color: C.secondary,
-                background: "rgba(7,8,10,0.55)", backdropFilter: "blur(8px)",
-                marginBottom: "44px",
-              }}
-            >
-              <span style={{ color: "#f59e0b", fontSize: "12px" }}>★★★★★</span>
-              <span>{d.hero.badge}</span>
-            </motion.div>
-
-            {/* Headline — word-by-word stagger */}
-            <h1 style={{
-              fontFamily: "'DM Serif Display', serif",
-              fontSize: "clamp(48px, 6.5vw, 96px)",
-              fontWeight: 400, letterSpacing: "-0.02em",
-              lineHeight: 1.05, color: C.primary,
-              marginBottom: "28px", maxWidth: "820px",
-            }}>
-              {d.hero.words.map((word, i) => (
-                <motion.span
-                  key={i}
-                  initial={{ y: 20 }}
-                  animate={{ y: 0 }}
-                  transition={{ duration: 0.55, delay: 0.25 + i * 0.08, ease: EXPO_OUT }}
-                  style={{
-                    display: "inline-block",
-                    marginRight: "0.28em",
-                    color: i >= d.hero.accentFrom ? C.accent : C.primary,
-                  }}
-                >
-                  {word}
-                </motion.span>
-              ))}
-            </h1>
-
-            {/* Subheadline */}
-            <motion.p
-              initial={{ y: 8 }}
-              animate={{ y: 0 }}
-              transition={{ duration: 0.6, delay: 0.5, ease: EXPO_OUT }}
-              style={{
-                fontSize: "clamp(14px, 1.4vw, 17px)", color: C.secondary,
-                lineHeight: 1.7, marginBottom: "48px",
-                maxWidth: "540px", fontWeight: 400,
-              }}
-            >
-              {d.hero.sub}
-            </motion.p>
-
-            {/* CTAs */}
-            <motion.div
-              initial={{ y: 12 }}
-              animate={{ y: 0 }}
-              transition={{ duration: 0.6, delay: 0.75, ease: EXPO_OUT }}
-              style={{ display: "flex", gap: "12px", flexWrap: "wrap" }}
-            >
-              <motion.a
-                href={TEL}
-                whileHover={{ scale: 1.04 }}
-                whileTap={{ scale: 0.97 }}
-                transition={{ duration: 0.15 }}
-                style={{
-                  display: "inline-flex", alignItems: "center", gap: "8px",
-                  background: C.accent, borderRadius: "8px", color: "#fff",
-                  fontSize: "16px", fontWeight: 600, padding: "15px 28px",
-                  textDecoration: "none",
-                }}
-              >
-                📞 {d.hero.callCta}
-              </motion.a>
-              <motion.a
-                href={WA}
-                whileHover={{ scale: 1.04, borderColor: C.accentBright } as never}
-                whileTap={{ scale: 0.97 }}
-                transition={{ duration: 0.15 }}
-                style={{
-                  display: "inline-flex", alignItems: "center", gap: "8px",
-                  background: "transparent", borderRadius: "8px", color: C.primary,
-                  fontSize: "16px", fontWeight: 600, padding: "15px 28px",
-                  textDecoration: "none", border: `1px solid ${C.border}`,
-                  transition: "border-color 0.2s",
-                }}
-                onMouseEnter={(e) => { e.currentTarget.style.borderColor = C.accentBright }}
-                onMouseLeave={(e) => { e.currentTarget.style.borderColor = C.border }}
-              >
-                💬 {d.hero.waCta}
-              </motion.a>
-            </motion.div>
+          <div style={{ marginTop: 12, borderTop: "1px solid rgba(255,255,255,0.1)", paddingTop: 12 }}>
+            {t.nav.map((lnk, i) => (
+              <button key={i} onClick={() => go(ids[i])} style={{ display: "block", width: "100%", textAlign: "left", background: "none", border: "none", cursor: "pointer", color: "#fff", fontSize: 15, fontWeight: 500, padding: "10px 0", borderBottom: "1px solid rgba(255,255,255,0.06)" }}>{lnk}</button>
+            ))}
+            <div style={{ display: "flex", gap: 8, paddingTop: 12 }}>
+              <a href={CALL_URL} style={{ flex: 1, background: ACCENT, color: "#fff", textAlign: "center", padding: "11px", borderRadius: 9999, fontSize: 13, fontWeight: 600, textDecoration: "none" }}>{t.cta1}</a>
+              <button onClick={() => setLang(lang === "en" ? "es" : "en")} style={{ background: "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.15)", borderRadius: 9999, cursor: "pointer", color: "rgba(255,255,255,0.7)", padding: "11px 14px", fontWeight: 500, fontSize: 11 }}>{t.switchLang}</button>
+            </div>
           </div>
-        </section>
+        )}
+      </nav>
 
-        {/* ─── TRUST BAR ───────────────────────────────────────────────────── */}
-        <section
-          aria-label="Key statistics"
-          style={{ borderTop: `1px solid ${C.border}`, borderBottom: `1px solid ${C.border}` }}
-        >
-          <div className="trust-grid" style={{ maxWidth: "960px", margin: "0 auto" }}>
-            {d.trust.map((stat, i) => (
-              <motion.div
-                key={i}
-                className={i < 2 ? "trust-sep" : ""}
-                initial={{ opacity: 0, y: 16 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true, margin: "-40px" }}
-                transition={{ duration: 0.5, delay: i * 0.1, ease: EXPO_OUT }}
-                style={{ textAlign: "center", padding: "52px 24px" }}
-              >
-                <div style={{
-                  fontFamily: "'DM Serif Display', serif",
-                  fontSize: "clamp(40px, 5vw, 60px)",
-                  fontWeight: 400, color: C.accent, letterSpacing: "-0.02em",
-                  marginBottom: "8px",
-                }}>
-                  <Counter end={stat.end} suffix={stat.suffix} decimal={"decimal" in stat ? !!(stat as { decimal?: boolean }).decimal : false} />
+      {/* HERO */}
+      <section style={{ position: "relative", height: "100vh", background: CANVAS, overflow: "hidden" }}>
+        <FadingVideo src={HERO_VIDEO} style={{ position: "absolute", left: "50%", top: 0, transform: "translateX(-50%)", width: "120%", height: "110%", objectFit: "cover", objectPosition: "top", zIndex: 0 }} />
+        <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to bottom, rgba(0,0,0,0.65) 0%, rgba(0,0,0,0.35) 50%, rgba(0,0,0,0.85) 100%)", zIndex: 1 }} />
+        <div style={{ position: "relative", zIndex: 2, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", height: "100%", padding: "96px 24px 80px", textAlign: "center" }}>
+          <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4, duration: 0.5 }}>
+            <div className="pp-lg" style={{ display: "inline-flex", alignItems: "center", borderRadius: 9999, padding: "6px 16px", marginBottom: 24 }}>
+              <span style={{ ...B, fontSize: 12, fontWeight: 500, color: "rgba(255,255,255,0.85)" }}>{t.badge}</span>
+            </div>
+          </motion.div>
+
+          <BlurText text={t.h1} className="pp-hero-h1"
+            style={{ ...H, fontSize: "clamp(42px, 5.5vw, 68px)", color: "#fff", lineHeight: 0.9, letterSpacing: "-3px", maxWidth: 680, marginBottom: 20 }} />
+
+          <motion.p initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.8, duration: 0.45 }}
+            style={{ ...B, fontSize: 15, color: "rgba(255,255,255,0.72)", lineHeight: 1.65, maxWidth: 480, marginBottom: 28, fontWeight: 300 }}>
+            {t.sub}
+          </motion.p>
+
+          <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 1.1, duration: 0.4 }}
+            style={{ display: "flex", flexWrap: "wrap", gap: 10, justifyContent: "center", marginBottom: 28 }}>
+            <a href={CALL_URL} className="pp-lg-strong" style={{ ...B, borderRadius: 9999, padding: "12px 24px", fontSize: 14, fontWeight: 600, color: "#fff", textDecoration: "none", display: "inline-block" }}>{t.cta1}</a>
+            <a href={WA_URL} target="_blank" rel="noopener noreferrer" style={{ ...B, color: "#fff", padding: "12px 24px", borderRadius: 9999, fontSize: 14, fontWeight: 500, textDecoration: "none", border: "1px solid rgba(255,255,255,0.25)" }}>{t.cta2}</a>
+          </motion.div>
+
+          <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 1.3, duration: 0.4 }}
+            style={{ display: "flex", gap: 12, flexWrap: "wrap", justifyContent: "center" }}>
+            {[
+              { num: "142+", lbl: lang === "en" ? "Five-Star Reviews" : "Reseñas de 5 Estrellas" },
+              { num: "< 1hr", lbl: lang === "en" ? "Emergency Response" : "Respuesta de Emergencia" },
+            ].map((s, i) => (
+              <div key={i} className="pp-lg" style={{ padding: "16px 20px", borderRadius: "1.25rem", minWidth: 160, textAlign: "center" }}>
+                <div style={{ ...H, fontSize: 28, color: "#fff", marginBottom: 4 }}>{s.num}</div>
+                <div style={{ ...B, fontSize: 11, color: "rgba(255,255,255,0.55)", fontWeight: 500, textTransform: "uppercase", letterSpacing: "0.05em" }}>{s.lbl}</div>
+              </div>
+            ))}
+          </motion.div>
+        </div>
+      </section>
+
+      {/* TRUST COUNTERS */}
+      <section style={{ background: CANVAS, borderTop: "1px solid rgba(255,255,255,0.06)", borderBottom: "1px solid rgba(255,255,255,0.06)", padding: "56px 24px" }}>
+        <div style={{ maxWidth: 900, margin: "0 auto", display: "flex", justifyContent: "space-around", flexWrap: "wrap", gap: 32 }}>
+          {[
+            { n: 142, sfx: "+", lbl: t.trustItems[0] },
+            { n: 5,   sfx: ".0★", lbl: t.trustItems[1] },
+            { n: 24,  sfx: "/7", lbl: t.trustItems[2] },
+          ].map((s, i) => (
+            <div key={i} style={{ textAlign: "center" }}>
+              <div style={{ ...H, fontSize: "clamp(40px, 5vw, 58px)", color: ACCENT, lineHeight: 1 }}>
+                <Counter to={s.n} suffix={s.sfx} />
+              </div>
+              <div style={{ ...B, fontSize: 11, color: "rgba(255,255,255,0.45)", marginTop: 6, fontWeight: 500, textTransform: "uppercase", letterSpacing: "0.06em" }}>{s.lbl}</div>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* SERVICES */}
+      <section id="services" style={{ position: "relative", minHeight: "100vh", background: CANVAS, overflow: "hidden", padding: "96px 24px" }}>
+        <FadingVideo src={SERVICES_VIDEO} style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", zIndex: 0, filter: "brightness(0.22)" }} />
+        <div style={{ position: "absolute", inset: 0, background: "rgba(0,0,0,0.6)", zIndex: 1 }} />
+        <div style={{ position: "relative", zIndex: 2, maxWidth: 1100, margin: "0 auto" }}>
+          <BlurText text={t.svcTitle}
+            style={{ ...H, fontSize: "clamp(32px, 4.5vw, 60px)", color: "#fff", lineHeight: 0.9, letterSpacing: "-2.5px", textAlign: "center", marginBottom: 52 }} />
+          <div className="pp-svc-grid" style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 14 }}>
+            {t.svcs.map((s, i) => (
+              <motion.div key={i} className="pp-lg" initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, amount: 0.1 }} transition={{ duration: 0.4, delay: i * 0.07 }}
+                style={{ borderRadius: "1.25rem", padding: "24px", minHeight: 260, display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
+                <div>
+                  <div style={{ fontSize: 26, marginBottom: 12 }}>{s.icon}</div>
+                  <h3 style={{ ...H, fontSize: 19, color: "#fff", marginBottom: 10 }}>{s.title}</h3>
+                  <p style={{ ...B, fontSize: 13, color: "rgba(255,255,255,0.62)", lineHeight: 1.65 }}>{s.desc}</p>
                 </div>
-                <div style={{ fontSize: "11px", fontWeight: 500, letterSpacing: "0.1em", color: C.secondary, textTransform: "uppercase" }}>
-                  {stat.label}
-                </div>
+                <a href={CALL_URL} style={{ ...B, display: "inline-block", marginTop: 16, background: "transparent", border: `1px solid ${ACCENT}`, color: ACCENT, borderRadius: 9999, padding: "8px 16px", fontSize: 12, fontWeight: 600, textDecoration: "none", textAlign: "center" }}>{s.cta}</a>
               </motion.div>
             ))}
           </div>
-        </section>
+        </div>
+      </section>
 
-        {/* ─── SERVICES ────────────────────────────────────────────────────── */}
-        <section
-          id="services"
-          aria-label="Services"
-          style={{ padding: "96px 32px", borderBottom: `1px solid ${C.border}` }}
-        >
-          <div style={{ maxWidth: "1280px", margin: "0 auto" }}>
+      {/* CTA MID */}
+      <section style={{ background: CANVAS, textAlign: "center", padding: "80px 24px", borderTop: "1px solid rgba(255,255,255,0.06)" }}>
+        <h2 style={{ ...H, fontSize: "clamp(26px, 4vw, 46px)", color: "#fff", marginBottom: 12 }}>{t.midTitle}</h2>
+        <p style={{ ...B, fontSize: 14, color: "rgba(255,255,255,0.55)", marginBottom: 28, fontWeight: 300 }}>{t.midSub}</p>
+        <a href={CALL_URL} className="pp-lg-strong" style={{ ...B, display: "inline-block", borderRadius: 9999, padding: "14px 28px", fontSize: 15, fontWeight: 600, color: "#fff", textDecoration: "none" }}>{t.midCta}</a>
+      </section>
 
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.6, ease: EXPO_OUT }}
-              style={{ marginBottom: "64px" }}
-            >
-              <Eyebrow>{d.services.eyebrow}</Eyebrow>
-              <h2 style={{
-                fontFamily: "'DM Serif Display', serif",
-                fontSize: "clamp(32px, 3.5vw, 52px)",
-                fontWeight: 400, letterSpacing: "-0.02em",
-                color: C.primary, marginBottom: "16px", lineHeight: 1.15,
-              }}>
-                {d.services.title}
-              </h2>
-              <p style={{ fontSize: "16px", color: C.secondary, lineHeight: 1.7, maxWidth: "540px" }}>
-                {d.services.sub}
-              </p>
-            </motion.div>
-
-            <div
-              className="svc-grid"
-              style={{ border: `1px solid ${C.border}`, borderRadius: "16px", overflow: "hidden" }}
-            >
-              {d.services.items.map((svc, i) => (
-                <motion.article
-                  key={i}
-                  initial={{ opacity: 0, y: 24 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true, margin: "-20px" }}
-                  transition={{ duration: 0.55, delay: i * 0.08, ease: EXPO_OUT }}
-                  style={{ background: C.card, display: "flex", flexDirection: "column" }}
-                >
-                  {/* Card image */}
-                  <div style={{ position: "relative", height: "180px", overflow: "hidden", flexShrink: 0 }}>
-                    <img
-                      src={svc.img}
-                      alt={svc.title}
-                      loading="lazy"
-                      width={400} height={180}
-                      style={{ width: "100%", height: "100%", objectFit: "cover" }}
-                    />
-                    <div aria-hidden="true" style={{
-                      position: "absolute", inset: 0,
-                      background: "linear-gradient(to bottom, transparent 45%, rgba(7,8,10,0.9) 100%)",
-                    }} />
-                  </div>
-                  {/* Card body */}
-                  <div style={{ padding: "24px 28px 32px", flex: 1 }}>
-                    <h3 style={{ fontSize: "16px", fontWeight: 600, color: C.primary, marginBottom: "10px", letterSpacing: "-0.2px" }}>
-                      {svc.title}
-                    </h3>
-                    <p style={{ fontSize: "14px", color: C.secondary, lineHeight: 1.75, margin: 0 }}>
-                      {svc.desc}
-                    </p>
-                  </div>
-                </motion.article>
-              ))}
-            </div>
+      {/* REVIEWS */}
+      <section id="reviews" style={{ background: CANVAS, padding: "80px 24px", borderTop: "1px solid rgba(255,255,255,0.06)" }}>
+        <div style={{ maxWidth: 1100, margin: "0 auto" }}>
+          <h2 style={{ ...H, fontSize: "clamp(26px, 4vw, 46px)", color: "#fff", textAlign: "center", marginBottom: 8 }}>{t.revTitle}</h2>
+          <p style={{ ...B, fontSize: 12, color: "rgba(255,255,255,0.4)", textAlign: "center", marginBottom: 44 }}>{t.revSub}</p>
+          <div className="pp-rev-grid" style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 14 }}>
+            {t.reviews.map((r, i) => (
+              <motion.div key={i} className="pp-lg" initial={{ opacity: 0, y: 14 }} whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, amount: 0.15 }} transition={{ duration: 0.35, delay: i * 0.06 }}
+                style={{ borderRadius: "1.25rem", padding: "24px" }}>
+                <div style={{ color: ACCENT, fontSize: 11, letterSpacing: 2, marginBottom: 12 }}>★★★★★</div>
+                <p style={{ ...B, fontSize: 13, color: "rgba(255,255,255,0.72)", lineHeight: 1.7, marginBottom: 16 }}>&ldquo;{r.text}&rdquo;</p>
+                <div style={{ ...B, fontSize: 12, fontWeight: 600, color: "#fff" }}>{r.name}</div>
+                <div style={{ ...B, fontSize: 11, color: "rgba(255,255,255,0.38)" }}>{r.loc}</div>
+              </motion.div>
+            ))}
           </div>
-        </section>
+        </div>
+      </section>
 
-        {/* ─── ABOUT ───────────────────────────────────────────────────────── */}
-        <section
-          id="about"
-          aria-label="About Pinnacle Plumbing"
-          style={{
-            padding: "96px 32px",
-            borderBottom: `1px solid ${C.border}`,
-            background: `radial-gradient(ellipse 55% 60% at 85% 50%, rgba(59,158,255,0.04) 0%, transparent 70%)`,
-          }}
-        >
-          <div className="about-grid" style={{ maxWidth: "1280px", margin: "0 auto" }}>
-
-            {/* Text column */}
-            <motion.div
-              initial={{ opacity: 0, x: -28 }}
-              whileInView={{ opacity: 1, x: 0 }}
-              viewport={{ once: true, margin: "-40px" }}
-              transition={{ duration: 0.7, ease: EXPO_OUT }}
-            >
-              <Eyebrow>{d.about.eyebrow}</Eyebrow>
-              <h2 style={{
-                fontFamily: "'DM Serif Display', serif",
-                fontSize: "clamp(28px, 3.5vw, 48px)",
-                fontWeight: 400, letterSpacing: "-0.02em",
-                color: C.primary, marginBottom: "20px", lineHeight: 1.15,
-              }}>
-                {d.about.title}
-              </h2>
-              <p style={{ fontSize: "16px", color: C.secondary, lineHeight: 1.8, marginBottom: "40px", maxWidth: "64ch" }}>
-                {d.about.body}
-              </p>
-
-              <div>
-                <p style={{ fontSize: "11px", fontWeight: 500, letterSpacing: "0.1em", color: C.accent, textTransform: "uppercase", marginBottom: "16px" }}>
-                  {d.about.areaLabel}
-                </p>
-                <div style={{ display: "flex", flexWrap: "wrap", gap: "8px" }}>
-                  {d.about.areas.map((area, i) => (
-                    <span key={i} style={{
-                      fontSize: "13px", fontWeight: 500, color: C.secondary,
-                      border: `1px solid ${C.border}`, borderRadius: "100px",
-                      padding: "6px 14px", background: C.card,
-                    }}>
-                      {area}
-                    </span>
-                  ))}
-                </div>
-              </div>
-            </motion.div>
-
-            {/* Photo column */}
-            <motion.div
-              initial={{ opacity: 0, x: 28 }}
-              whileInView={{ opacity: 1, x: 0 }}
-              viewport={{ once: true, margin: "-40px" }}
-              transition={{ duration: 0.7, delay: 0.12, ease: EXPO_OUT }}
-              style={{ position: "relative", borderRadius: "16px", overflow: "hidden" }}
-            >
-              <img
-                src={IMG.about}
-                alt="Pinnacle Plumbing technician at work"
-                loading="lazy"
-                width={800} height={600}
-                style={{ width: "100%", height: "100%", objectFit: "cover", display: "block", aspectRatio: "4/3" }}
-              />
-              {/* Tint overlay */}
-              <div aria-hidden="true" style={{
-                position: "absolute", inset: 0,
-                background: "linear-gradient(to top right, rgba(59,158,255,0.12) 0%, transparent 55%)",
-              }} />
-              {/* Floating badge */}
-              <div style={{
-                position: "absolute", bottom: "24px", left: "24px",
-                background: "rgba(7,8,10,0.88)", backdropFilter: "blur(12px)",
-                borderRadius: "12px", padding: "14px 20px",
-                border: `1px solid ${C.border}`,
-              }}>
-                <div style={{ fontFamily: "'DM Serif Display', serif", fontSize: "22px", color: C.primary, letterSpacing: "-0.5px" }}>
-                  5.0 ★
-                </div>
-                <div style={{ fontSize: "12px", color: C.secondary, marginTop: "2px" }}>
-                  142 {d.about.ratingLabel}
-                </div>
-              </div>
-            </motion.div>
-          </div>
-        </section>
-
-        {/* ─── REVIEWS ─────────────────────────────────────────────────────── */}
-        <section
-          id="reviews"
-          aria-label="Customer reviews"
-          style={{ padding: "96px 32px", borderBottom: `1px solid ${C.border}` }}
-        >
-          <div style={{ maxWidth: "1280px", margin: "0 auto" }}>
-
-            <motion.div
-              initial={{ opacity: 0, y: 16 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.55, ease: EXPO_OUT }}
-              style={{ marginBottom: "64px" }}
-            >
-              <Eyebrow>{d.reviews.eyebrow}</Eyebrow>
-              <h2 style={{
-                fontFamily: "'DM Serif Display', serif",
-                fontSize: "clamp(28px, 3.5vw, 48px)",
-                fontWeight: 400, letterSpacing: "-0.02em",
-                color: C.primary, lineHeight: 1.15,
-              }}>
-                {d.reviews.title}
-              </h2>
-            </motion.div>
-
-            <div className="reviews-grid">
-              {d.reviews.items.map((rev, i) => (
-                <motion.article
-                  key={i}
-                  initial={{ opacity: 0, y: 24 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true, margin: "-20px" }}
-                  transition={{ duration: 0.55, delay: i * 0.1, ease: EXPO_OUT }}
-                  style={{
-                    background: `linear-gradient(145deg, ${C.card} 0%, rgba(59,158,255,0.025) 100%)`,
-                    border: `1px solid ${C.border}`, borderRadius: "16px",
-                    padding: "32px", display: "flex", flexDirection: "column", gap: "20px",
-                  }}
-                >
-                  <div style={{ display: "flex", gap: "2px" }}>
-                    {Array.from({ length: 5 }).map((_, s) => (
-                      <span key={s} style={{ color: "#f59e0b", fontSize: "15px" }}>★</span>
-                    ))}
-                  </div>
-                  <p style={{ fontSize: "15px", color: C.primary, lineHeight: 1.75, flex: 1, fontStyle: "italic", margin: 0 }}>
-                    "{rev.text}"
-                  </p>
-                  <div style={{ borderTop: `1px solid ${C.border}`, paddingTop: "16px" }}>
-                    <p style={{ fontSize: "14px", fontWeight: 600, color: C.primary, margin: 0 }}>{rev.author}</p>
-                    <p style={{ fontSize: "13px", color: C.secondary, marginTop: "2px", marginBottom: 0 }}>{rev.location}</p>
-                  </div>
-                </motion.article>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        {/* ─── CTA FINAL ───────────────────────────────────────────────────── */}
-        <section
-          id="contact"
-          aria-label="Contact us"
-          style={{
-            padding: "120px 32px",
-            position: "relative", overflow: "hidden",
-          }}
-        >
-          <div aria-hidden="true" style={{
-            position: "absolute", top: "50%", left: "50%",
-            transform: "translate(-50%, -50%)",
-            width: "700px", height: "420px",
-            background: `radial-gradient(ellipse, rgba(59,158,255,0.08) 0%, transparent 70%)`,
-            pointerEvents: "none",
-          }} />
-
-          <div style={{ maxWidth: "680px", margin: "0 auto", position: "relative", zIndex: 1 }}>
-            <motion.div
-              initial={{ opacity: 0, y: 28 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.7, ease: EXPO_OUT }}
-            >
-              <Eyebrow>{d.cta.eyebrow}</Eyebrow>
-              <h2 style={{
-                fontFamily: "'DM Serif Display', serif",
-                fontSize: "clamp(36px, 5vw, 68px)",
-                fontWeight: 400, letterSpacing: "-0.02em",
-                color: C.primary, marginBottom: "16px", lineHeight: 1.1,
-              }}>
-                {d.cta.title}
-              </h2>
-              <p style={{ fontSize: "18px", color: C.secondary, lineHeight: 1.65, marginBottom: "48px" }}>
-                {d.cta.sub}
-              </p>
-              <div style={{ display: "flex", gap: "12px", flexWrap: "wrap" }}>
-                <motion.a
-                  href={TEL}
-                  whileHover={{ scale: 1.04 }}
-                  whileTap={{ scale: 0.97 }}
-                  transition={{ duration: 0.15 }}
-                  style={{
-                    display: "inline-flex", alignItems: "center", gap: "8px",
-                    background: C.accent, borderRadius: "8px", color: "#fff",
-                    fontSize: "16px", fontWeight: 600, padding: "16px 32px",
-                    textDecoration: "none",
-                  }}
-                >
-                  📞 {d.cta.callCta}
-                </motion.a>
-                <motion.a
-                  href={WA}
-                  whileHover={{ scale: 1.04 }}
-                  whileTap={{ scale: 0.97 }}
-                  transition={{ duration: 0.15 }}
-                  style={{
-                    display: "inline-flex", alignItems: "center", gap: "8px",
-                    background: "transparent", borderRadius: "8px", color: C.primary,
-                    fontSize: "16px", fontWeight: 600, padding: "16px 32px",
-                    textDecoration: "none", border: `1px solid ${C.border}`,
-                    transition: "border-color 0.2s",
-                  }}
-                  onMouseEnter={(e) => { e.currentTarget.style.borderColor = C.accentBright }}
-                  onMouseLeave={(e) => { e.currentTarget.style.borderColor = C.border }}
-                >
-                  💬 {d.cta.waCta}
-                </motion.a>
-              </div>
-            </motion.div>
-          </div>
-        </section>
-      </main>
-
-      {/* ─── FOOTER ──────────────────────────────────────────────────────── */}
-      <footer style={{ padding: "48px 32px", borderTop: `1px solid ${C.border}` }}>
-        <div style={{
-          maxWidth: "1280px", margin: "0 auto",
-          display: "flex", justifyContent: "space-between",
-          alignItems: "flex-start", flexWrap: "wrap", gap: "32px",
-        }}>
+      {/* ABOUT */}
+      <section id="about" style={{ background: CANVAS, padding: "80px 24px", borderTop: "1px solid rgba(255,255,255,0.06)" }}>
+        <div className="pp-about-grid" style={{ maxWidth: 1000, margin: "0 auto", display: "grid", gridTemplateColumns: "1fr 1fr", gap: 60, alignItems: "center" }}>
           <div>
-            <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "14px" }}>
-              <svg width="24" height="24" viewBox="0 0 28 28" fill="none" aria-hidden="true">
-                <rect width="28" height="28" rx="7" fill={C.accent} />
-                <path d="M14 6 L17 11 L22 11 L18 15 L20 20 L14 17 L8 20 L10 15 L6 11 L11 11 Z" fill="white" fillRule="evenodd" />
-              </svg>
-              <span style={{ fontSize: "14px", fontWeight: 600, color: C.primary }}>Pinnacle Plumbing Sewer & Drain</span>
+            <h2 style={{ ...H, fontSize: "clamp(24px, 3.5vw, 38px)", color: "#fff", marginBottom: 16 }}>{t.aboutTitle}</h2>
+            <p style={{ ...B, fontSize: 14, color: "rgba(255,255,255,0.62)", lineHeight: 1.75, marginBottom: 20 }}>{t.aboutBody}</p>
+            <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 20 }}>
+              {t.areas.map((a, i) => (
+                <span key={i} className="pp-lg" style={{ ...B, borderRadius: 9999, padding: "5px 14px", fontSize: 11, color: "rgba(255,255,255,0.65)", fontWeight: 500 }}>{a}</span>
+              ))}
             </div>
-            <address style={{ fontStyle: "normal" }}>
-              <p style={{ fontSize: "14px", color: C.secondary, margin: 0 }}>{d.footer.address}</p>
-              <p style={{ fontSize: "14px", color: C.secondary, margin: "2px 0 0" }}>{d.footer.region}</p>
-              <p style={{ fontSize: "14px", color: C.secondary, margin: "6px 0 0" }}>{d.footer.hours}</p>
-            </address>
+            <ul style={{ listStyle: "none", display: "flex", flexDirection: "column", gap: 8 }}>
+              {t.bullets.map((b, i) => (
+                <li key={i} style={{ ...B, fontSize: 13, color: "rgba(255,255,255,0.62)", display: "flex", alignItems: "center", gap: 8 }}>
+                  <span style={{ color: ACCENT, fontWeight: 700 }}>✓</span>{b}
+                </li>
+              ))}
+            </ul>
           </div>
-          <div style={{ textAlign: "right" }}>
-            <a
-              href={TEL}
-              style={{ fontSize: "22px", fontWeight: 700, color: C.primary, textDecoration: "none", display: "block", letterSpacing: "-0.5px", marginBottom: "6px" }}
-            >
-              (201) 419-4016
-            </a>
-            <p style={{ fontSize: "12px", color: C.secondary, margin: 0 }}>{d.footer.rights}</p>
+          <div className="pp-lg" style={{ borderRadius: "1.25rem", padding: "40px 32px", textAlign: "center" }}>
+            <div style={{ ...H, fontSize: 72, color: ACCENT, lineHeight: 1 }}>5.0★</div>
+            <div style={{ ...B, fontSize: 12, color: "rgba(255,255,255,0.45)", marginTop: 8, fontWeight: 500 }}>142 Google Reviews</div>
+            <a href={CALL_URL} style={{ ...B, display: "inline-block", marginTop: 24, background: ACCENT, color: "#fff", borderRadius: 9999, padding: "12px 24px", fontSize: 13, fontWeight: 600, textDecoration: "none" }}>{t.cta1}</a>
+          </div>
+        </div>
+      </section>
+
+      {/* FINAL CTA */}
+      <section id="contact" style={{ background: CANVAS, padding: "96px 24px", textAlign: "center", borderTop: "1px solid rgba(255,255,255,0.06)" }}>
+        <BlurText text={t.finalTitle}
+          style={{ ...H, fontSize: "clamp(36px, 5.5vw, 66px)", color: "#fff", lineHeight: 0.9, letterSpacing: "-3px", marginBottom: 16 }} />
+        <p style={{ ...B, fontSize: 14, color: "rgba(255,255,255,0.55)", marginBottom: 32, fontWeight: 300 }}>{t.finalSub}</p>
+        <div style={{ display: "flex", gap: 12, justifyContent: "center", flexWrap: "wrap", marginBottom: 20 }}>
+          <a href={CALL_URL} className="pp-lg-strong" style={{ ...B, borderRadius: 9999, padding: "14px 28px", fontSize: 15, fontWeight: 600, color: "#fff", textDecoration: "none" }}>{t.finalCta1}</a>
+          <a href={WA_URL} target="_blank" rel="noopener noreferrer" style={{ ...B, color: "rgba(255,255,255,0.6)", fontSize: 14, fontWeight: 500, textDecoration: "none", display: "flex", alignItems: "center" }}>{t.finalCta2}</a>
+        </div>
+        <div style={{ ...B, fontSize: 12, color: "rgba(255,255,255,0.3)" }}>{t.finalInfo}</div>
+      </section>
+
+      {/* FOOTER */}
+      <footer style={{ background: CANVAS, borderTop: "1px solid rgba(255,255,255,0.08)", padding: "48px 24px 140px" }}>
+        <div style={{ maxWidth: 1100, margin: "0 auto", display: "flex", justifyContent: "space-between", flexWrap: "wrap", gap: 24 }}>
+          <div>
+            <div style={{ ...H, fontSize: 16, color: "#fff", marginBottom: 4 }}>Pinnacle Plumbing Sewer & Drain</div>
+            <div style={{ ...B, fontSize: 12, color: "rgba(255,255,255,0.35)" }}>{t.footerTag}</div>
+          </div>
+          <div style={{ display: "flex", gap: 20, flexWrap: "wrap", alignItems: "center" }}>
+            {t.footerLinks.map((lnk, i) => (
+              <button key={i} onClick={() => go(ids[i])} style={{ ...B, background: "none", border: "none", cursor: "pointer", color: "rgba(255,255,255,0.38)", fontSize: 12, fontWeight: 500 }}>{lnk}</button>
+            ))}
+            <span style={{ ...B, fontSize: 12, color: "rgba(255,255,255,0.25)" }}>· (201) 419-4016 · © 2025</span>
           </div>
         </div>
       </footer>
 
-      {/* ─── MOBILE STICKY BAR ───────────────────────────────────────────── */}
-      <div
-        className="mobile-bar"
-        role="navigation"
-        aria-label="Mobile quick contact"
-        style={{
-          position: "fixed", bottom: 0, left: 0, right: 0, zIndex: 150,
-          height: "64px", gridTemplateColumns: "1fr 1fr",
-          backdropFilter: "blur(20px)", WebkitBackdropFilter: "blur(20px)",
-          borderTop: `1px solid ${C.border}`,
-          background: "rgba(7,8,10,0.96)",
-          padding: "8px 12px",
-          gap: "8px",
-        }}
-      >
-        <a
-          href={TEL}
-          style={{
-            display: "flex", alignItems: "center", justifyContent: "center", gap: "6px",
-            background: C.accent, color: "#fff", fontSize: "15px", fontWeight: 600,
-            textDecoration: "none", borderRadius: "8px",
-          }}
-        >
-          {d.bar.call}
-        </a>
-        <a
-          href={WA}
-          style={{
-            display: "flex", alignItems: "center", justifyContent: "center", gap: "6px",
-            background: "#25d366", color: "#fff", fontSize: "15px", fontWeight: 600,
-            textDecoration: "none", borderRadius: "8px",
-          }}
-        >
-          {d.bar.wa}
-        </a>
+      {/* MOBILE STICKY BAR */}
+      <div className="pp-sticky" style={{ position: "fixed", bottom: 0, left: 0, right: 0, zIndex: 200, gridTemplateColumns: "1fr 1fr", height: 64, background: "rgba(0,0,0,0.88)", backdropFilter: "blur(20px)", borderTop: "1px solid rgba(255,255,255,0.08)" }}>
+        <a href={CALL_URL} style={{ background: ACCENT, color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 14, fontWeight: 600, textDecoration: "none", ...B }}>{t.callLabel}</a>
+        <a href={WA_URL} target="_blank" rel="noopener noreferrer" style={{ background: "#25D366", color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 14, fontWeight: 600, textDecoration: "none", ...B }}>{t.waLabel}</a>
       </div>
     </div>
   )
