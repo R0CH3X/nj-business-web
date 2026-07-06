@@ -1,10 +1,29 @@
 "use client"
 
-import { motion } from "framer-motion"
+import { useEffect, useRef, useState } from "react"
+import { motion, useInView, useMotionValue, animate } from "framer-motion"
 import type { Salon } from "@/data/salons"
 import { useLanguage } from "@/contexts/LanguageContext"
 
 interface Props { salon: Salon }
+
+/** Counts up from 0 when scrolled into view. decimals=1 for ratings like 4.8 */
+function CountUp({ to, decimals = 0 }: { to: number; decimals?: number }) {
+  const ref = useRef<HTMLSpanElement>(null)
+  const inView = useInView(ref, { once: true, amount: 0.6 })
+  const mv = useMotionValue(0)
+  const [display, setDisplay] = useState((0).toFixed(decimals))
+  useEffect(() => {
+    if (!inView) return
+    const controls = animate(mv, to, {
+      duration: 1.4,
+      ease: [0.16, 1, 0.3, 1],
+      onUpdate: (v) => setDisplay(v.toFixed(decimals)),
+    })
+    return () => controls.stop()
+  }, [inView, mv, to, decimals])
+  return <span ref={ref}>{display}</span>
+}
 
 function Stars({ rating, color }: { rating: number; color: string }) {
   return (
@@ -51,12 +70,12 @@ export default function SalonReviews({ salon }: Props) {
         </p>
         <div className="flex items-center justify-center gap-3 mb-4">
           <span className="font-playfair text-5xl font-bold" style={{ fontFamily: "var(--font-playfair)", color: salon.accentColor }}>
-            {salon.rating}
+            <CountUp to={salon.rating} decimals={1} />
           </span>
           <div>
             <Stars rating={Math.round(salon.rating)} color={salon.accentColor} />
             <p className="text-sm font-light text-[#6B6560] mt-1" style={{ fontFamily: "var(--font-dm-sans)" }}>
-              {salon.reviewCount} {t.verifiedReviews}
+              <CountUp to={salon.reviewCount} /> {t.verifiedReviews}
             </p>
           </div>
         </div>

@@ -1,6 +1,7 @@
 "use client"
 
 import Link from "next/link"
+import { motion } from "framer-motion"
 import type { Salon } from "@/data/salons"
 import { useLanguage, pick } from "@/contexts/LanguageContext"
 
@@ -20,7 +21,13 @@ export default function SalonFooter({ salon }: Props) {
   return (
     <footer className="bg-[#1A1612] text-[#FAF7F4] pt-16 pb-24 md:py-16 px-6 md:px-10">
       <div className="max-w-7xl mx-auto">
-        <div className="grid md:grid-cols-3 gap-12 pb-12 border-b border-[#2A2520]">
+        <motion.div
+          className="grid md:grid-cols-3 gap-12 pb-12 border-b border-[#2A2520]"
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, amount: 0.15 }}
+          transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+        >
           {/* Brand */}
           <div>
             <p className="font-bold text-xl mb-3" style={{ fontFamily: "var(--font-playfair)" }}>
@@ -94,7 +101,7 @@ export default function SalonFooter({ salon }: Props) {
               <p className="mt-2">{salon.hours}</p>
             </address>
           </div>
-        </div>
+        </motion.div>
 
         {/* Bottom bar */}
         <div className="pt-8 flex flex-col md:flex-row items-center justify-between gap-4">

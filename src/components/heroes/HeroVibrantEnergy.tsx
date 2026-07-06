@@ -24,6 +24,7 @@ export default function HeroVibrantEnergy({ salon }: { salon: Salon }) {
             muted
             loop
             playsInline
+            poster={imgSrc}
             className="hero-video absolute inset-0 w-full h-full object-cover object-center"
           >
             <source src={videoSrc} type="video/mp4" />

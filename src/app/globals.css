@@ -137,3 +137,32 @@ img {
   transform-origin: left;
   transition: transform 0.1s linear;
 }
+
+/* Tactile press feedback on every call/WhatsApp CTA sitewide */
+a[href^="tel:"],
+a[href*="wa.me"] {
+  transition: transform 0.15s cubic-bezier(0.25, 1, 0.5, 1), box-shadow 0.35s ease, opacity 0.2s ease, color 0.2s ease, border-color 0.2s ease, background-color 0.2s ease;
+}
+a[href^="tel:"]:active,
+a[href*="wa.me"]:active {
+  transform: scale(0.96);
+}
+
+/* Mobile CTA bar slides up once on load */
+@keyframes cta-bar-rise {
+  from { transform: translateY(100%); }
+  to   { transform: translateY(0); }
+}
+.mobile-cta-bar {
+  animation: cta-bar-rise 0.5s cubic-bezier(0.22, 1, 0.36, 1) 0.6s backwards;
+}
+
+/* Accessibility — collapse all motion for users who ask for it */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

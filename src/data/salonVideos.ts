@@ -12,7 +12,8 @@ const SALON_VIDEOS: Record<string, string> = {
   "henry-castel-vip-beauty-salon":    "/videos/henry-castel-vip-beauty-salon.mp4",
   "estilos-beauty-salon":             "/videos/estilos-beauty-salon.mp4",
   "salon-salvys":                     "/videos/salon-salvys.mp4",
-  "glamour-by-latin":                 "/videos/glamour-by-latin.mp4",
+  // "glamour-by-latin" removed: 16:9 footage cropped badly in the narrow
+  // bold-editorial frame — page falls back to its curated hero photo.
   "glamour-by-marisol-salon":         "/videos/glamour-by-marisol-salon.mp4",
   "amarilys-beauty-studio":           "/videos/amarilys-beauty-studio.mp4",
   "pinnacle-plumbing-demo":           "/videos/pinnacle-plumbing-demo.mp4",

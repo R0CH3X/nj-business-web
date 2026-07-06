@@ -103,7 +103,14 @@ export default function SalonGallery({ salon }: Props) {
           {images.map((img, i) => {
             const label = pick(lang, img.label, img.labelEs)
             return (
-              <div key={i} className="flex-none w-72 h-80 relative overflow-hidden snap-start">
+              <motion.div
+                key={i}
+                className="flex-none w-72 h-80 relative overflow-hidden snap-start"
+                initial={{ opacity: 0, x: 24 }}
+                whileInView={{ opacity: 1, x: 0 }}
+                viewport={{ once: true, amount: 0.2 }}
+                transition={{ duration: 0.5, delay: Math.min(i, 2) * 0.08, ease: [0.22, 1, 0.36, 1] }}
+              >
                 <Image
                   src={img.src}
                   alt={`${salon.name} — ${label}`}
@@ -115,7 +122,7 @@ export default function SalonGallery({ salon }: Props) {
                   style={{ background: `linear-gradient(to top, ${salon.accentColor}BB, transparent)` }}>
                   <span className="text-white text-sm" style={{ fontFamily: "var(--font-dm-sans)" }}>{label}</span>
                 </div>
-              </div>
+              </motion.div>
             )
           })}
         </div>

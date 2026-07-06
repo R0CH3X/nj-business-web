@@ -106,6 +106,7 @@ export default function HeroBoldEditorial({ salon }: { salon: Salon }) {
             muted
             loop
             playsInline
+            poster={imgSrc}
             className="hero-video absolute inset-0 w-full h-full object-cover object-top"
             style={{ filter: "grayscale(20%) contrast(1.1)" }}
           >

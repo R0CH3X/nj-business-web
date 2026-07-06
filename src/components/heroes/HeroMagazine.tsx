@@ -51,6 +51,7 @@ export default function HeroMagazine({ salon }: { salon: Salon }) {
               muted
               loop
               playsInline
+              poster={imgSrc}
               className="hero-video absolute inset-0 w-full h-full object-cover object-top"
             >
               <source src={videoSrc} type="video/mp4" />
