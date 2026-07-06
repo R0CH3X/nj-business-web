@@ -29,7 +29,7 @@ export default function ServicesNumbered({ salon, dark = false }: Props) {
   const border = dark ? "#1A1625" : "#1A1714"
   const numColor = salon.accentColor
   const textColor = dark ? "#E8E3F0" : "#F5F0EB"
-  const subColor = dark ? "#5A5568" : "#5A5550"
+  const subColor = "#A09A95"
 
   return (
     <section id="services" style={{ backgroundColor: bg }} className="py-24 md:py-32">
@@ -43,7 +43,7 @@ export default function ServicesNumbered({ salon, dark = false }: Props) {
           variants={labelVariants}
         >
           <p className="text-xs font-medium tracking-[0.3em] uppercase"
-            style={{ color: numColor, fontFamily: "var(--font-dm-sans)" }}>
+            style={{ color: `color-mix(in srgb, ${numColor} 55%, white)`, fontFamily: "var(--font-dm-sans)" }}>
             {t.servicesEyebrow} / {pick(lang, "Servicios", "Services")}
           </p>
           <div className="h-px flex-1" style={{ backgroundColor: border }} />
@@ -102,8 +102,8 @@ export default function ServicesNumbered({ salon, dark = false }: Props) {
           <p key={lang} className="lang-fade-in text-sm font-light" style={{ color: subColor, fontFamily: "var(--font-dm-sans)" }}>
             {t.servicesQuestion}
           </p>
-          <a href={`tel:${salon.phone}`}
-            className="inline-flex items-center gap-2 px-6 py-3 text-sm font-medium text-[#0A0907] transition-opacity hover:opacity-90"
+          <a href={`tel:+1${salon.phone}`}
+            className="inline-flex items-center gap-2 px-6 py-3 text-sm font-medium text-white transition-opacity hover:opacity-90"
             style={{ backgroundColor: numColor, borderRadius: "2px", fontFamily: "var(--font-dm-sans)" }}>
             {salon.phoneFormatted}
           </a>

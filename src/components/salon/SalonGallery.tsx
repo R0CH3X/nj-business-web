@@ -28,8 +28,10 @@ export default function SalonGallery({ salon }: Props) {
   const [active, setActive] = useState<number | null>(null)
   const { gallery: images } = getSalonImages(salon.slug)
 
-  // Asymmetric heights for editorial feel
-  const heights = ["row-span-2", "row-span-1", "row-span-1", "row-span-2", "row-span-1", "row-span-1"]
+  // Asymmetric heights for editorial feel — spans must sum to exactly 9 (3 cols × 3 rows)
+  // or CSS Grid's sparse auto-placement leaves an empty cell. [2,2,1,2,1,1] sums to 9 and
+  // tiles the 3×3 grid with zero gaps (verified against the auto-placement algorithm).
+  const heights = ["row-span-2", "row-span-2", "row-span-1", "row-span-2", "row-span-1", "row-span-1"]
 
   return (
     <section id="gallery" className="py-24 md:py-32 bg-[#F0ECE8]">

@@ -92,7 +92,7 @@ export default function SalonHero({ salon }: Props) {
           {/* CTAs */}
           <div className="flex flex-wrap gap-3">
             <a
-              href={`tel:${salon.phone}`}
+              href={`tel:+1${salon.phone}`}
               className="inline-flex items-center gap-2.5 px-7 py-3.5 text-sm font-medium text-white transition-opacity hover:opacity-90"
               style={{ backgroundColor: salon.accentColor, borderRadius: "3px", fontFamily: "var(--font-dm-sans)" }}
             >
@@ -104,7 +104,7 @@ export default function SalonHero({ salon }: Props) {
 
             {salon.whatsapp && (
               <a
-                href={`https://wa.me/${salon.phone}`}
+                href={`https://wa.me/1${salon.phone}`}
                 className="inline-flex items-center gap-2.5 px-7 py-3.5 text-sm font-medium text-white transition-opacity hover:opacity-90"
                 style={{ backgroundColor: "#25D366", borderRadius: "3px", fontFamily: "var(--font-dm-sans)" }}
                 target="_blank" rel="noopener noreferrer"

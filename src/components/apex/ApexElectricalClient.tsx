@@ -3,11 +3,11 @@
 import { useState, useEffect, useRef } from "react"
 import { motion, useInView, useMotionValue, animate } from "framer-motion"
 
-// ─── Video URLs (Pexels, free stock, verified) ────────────────────────────────
-// Hero: electricista trabajando en panel eléctrico, cables expuestos
-const HERO_VIDEO = "https://videos.pexels.com/video-files/3048645/3048645-uhd_2560_1440_25fps.mp4"
-// Services: instalación eléctrica, cables y herramientas en pared
-const SERVICES_VIDEO = "https://videos.pexels.com/video-files/6804068/6804068-uhd_2560_1440_25fps.mp4"
+// ─── Videos (stock gratuito, autohospedados en /public/videos) ────────────────
+// Hero: electricistas trabajando con equipo eléctrico
+const HERO_VIDEO = "/videos/apex-hero.mp4"
+// Services: trabajadores eléctricos en planta, b-roll industrial
+const SERVICES_VIDEO = "/videos/apex-services.mp4"
 
 // ─── Design tokens ────────────────────────────────────────────────────────────
 const ACCENT   = "#ff4300"
@@ -57,6 +57,8 @@ function FadingVideo({ src, style }: { src: string; style?: React.CSSProperties 
     video.addEventListener("loadeddata", onLoaded)
     video.addEventListener("timeupdate", onTimeUpdate)
     video.addEventListener("ended", onEnded)
+    // Local files can finish loading before listeners attach — fire manually
+    if (video.readyState >= 2) onLoaded()
     return () => {
       cancelAnimationFrame(rafRef.current)
       video.removeEventListener("loadeddata", onLoaded)

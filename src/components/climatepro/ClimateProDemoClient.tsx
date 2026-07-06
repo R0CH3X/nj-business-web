@@ -37,7 +37,7 @@ const IMG = {
 const PHONE_RAW  = "6095550371"
 const PHONE_DISP = "(609) 555-0371"
 const CALL_URL   = `tel:+1${PHONE_RAW}`
-const WA_URL     = `https://wa.me/${PHONE_RAW}?text=Hi!%20I%20need%20HVAC%20service%20in%20New%20Jersey.`
+const WA_URL     = `https://wa.me/1${PHONE_RAW}?text=Hi!%20I%20need%20HVAC%20service%20in%20New%20Jersey.`
 
 const copy = {
   en: {

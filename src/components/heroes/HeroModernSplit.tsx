@@ -6,11 +6,13 @@ import { motion } from "framer-motion"
 import Image from "next/image"
 import type { Salon } from "@/data/salons"
 import { getSalonImages } from "@/data/salonImages"
+import { getSalonVideo } from "@/data/salonVideos"
 import { useLanguage, pick } from "@/contexts/LanguageContext"
 
 export default function HeroModernSplit({ salon }: { salon: Salon }) {
   const { t, lang } = useLanguage()
   const { hero: imgSrc } = getSalonImages(salon.slug)
+  const videoSrc = getSalonVideo(salon.slug)
 
   return (
     <section className="min-h-screen flex flex-col md:flex-row overflow-hidden">
@@ -87,7 +89,7 @@ export default function HeroModernSplit({ salon }: { salon: Salon }) {
 
           {/* CTAs */}
           <div className="flex flex-wrap gap-3">
-            <a href={`tel:${salon.phone}`}
+            <a href={`tel:+1${salon.phone}`}
               className="inline-flex items-center gap-2 px-6 py-3.5 text-sm font-medium text-white transition-opacity hover:opacity-90"
               style={{ backgroundColor: salon.accentColor, borderRadius: "3px", fontFamily: "var(--font-dm-sans)" }}>
               {salon.phoneFormatted}
@@ -101,29 +103,43 @@ export default function HeroModernSplit({ salon }: { salon: Salon }) {
         </div>
 
         {/* Address at bottom */}
-        <p className="text-xs text-[#9A9490] mt-10 md:absolute md:bottom-10 md:left-14"
+        <p className="text-xs text-[#6B6560] mt-10 md:absolute md:bottom-10 md:left-14"
           style={{ fontFamily: "var(--font-dm-sans)" }}>
           {salon.address} · {salon.hours}
         </p>
       </motion.div>
 
-      {/* RIGHT: Full-bleed photo, zero padding */}
+      {/* RIGHT: Full-bleed video/photo, zero padding */}
       <motion.div
-        className="relative min-h-[50vh] md:min-h-0 md:flex-1"
+        className="relative min-h-[50vh] md:min-h-0 md:flex-1 overflow-hidden"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ duration: 0.9, delay: 0.2, ease: [0.22, 1, 0.36, 1] }}
       >
-        <Image
-          src={imgSrc}
-          alt={salon.name}
-          fill
-          priority
-          className="object-cover object-center"
-          sizes="(max-width: 768px) 100vw, 50vw"
-        />
-        {/* Rating badge on photo */}
-        <div className="absolute top-8 right-8 flex items-center gap-2 px-4 py-2 backdrop-blur-md"
+        {videoSrc ? (
+          <video
+            autoPlay
+            muted
+            loop
+            playsInline
+            className="hero-video absolute inset-0 w-full h-full object-cover object-center"
+          >
+            <source src={videoSrc} type="video/mp4" />
+          </video>
+        ) : (
+          <Image
+            src={imgSrc}
+            alt={salon.name}
+            fill
+            priority
+            className="object-cover object-center"
+            sizes="(max-width: 768px) 100vw, 50vw"
+          />
+        )}
+        {/* Dark overlay for readability */}
+        <div className="absolute inset-0" style={{ backgroundColor: "rgba(0,0,0,0.4)" }} />
+        {/* Rating badge on video */}
+        <div className="absolute top-8 right-8 flex items-center gap-2 px-4 py-2 backdrop-blur-md z-10"
           style={{ backgroundColor: "rgba(10,9,7,0.55)", borderRadius: "3px" }}>
           <span className="text-white text-sm font-medium" style={{ fontFamily: "var(--font-dm-sans)" }}>
             ★ {salon.rating}

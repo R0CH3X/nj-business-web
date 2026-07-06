@@ -41,7 +41,7 @@ export default function ServicesMinimal({ salon }: Props) {
         >
           <div className="flex items-center gap-4 mb-5">
             <div className="w-10 h-0.5" style={{ backgroundColor: salon.accentColor }} />
-            <p className="text-xs font-medium tracking-[0.3em] uppercase text-[#9A9490]"
+            <p className="text-xs font-medium tracking-[0.3em] uppercase text-[#6B6560]"
               style={{ fontFamily: "var(--font-dm-sans)" }}>
               {t.servicesEyebrow}
             </p>
@@ -64,7 +64,7 @@ export default function ServicesMinimal({ salon }: Props) {
               {pick(lang, "beautifully done.", "hecho con arte.")}
             </span>
           </h2>
-          <p key={`${lang}-sub`} className="lang-fade-in mt-3 text-sm text-[#9A9490]" style={{ fontFamily: "var(--font-dm-sans)" }}>
+          <p key={`${lang}-sub`} className="lang-fade-in mt-3 text-sm text-[#6B6560]" style={{ fontFamily: "var(--font-dm-sans)" }}>
             {pick(lang, "Todo lo que necesitas, hecho con arte.", "Everything you need, beautifully done.")}
           </p>
         </motion.div>
@@ -87,7 +87,7 @@ export default function ServicesMinimal({ salon }: Props) {
                   <p style={{ fontFamily: "var(--font-playfair)", fontSize: "1.05rem", fontWeight: 400, color: "#1A1612" }}>
                     {service.name}
                   </p>
-                  <p className="text-xs italic text-[#ABA6A1] mt-0.5"
+                  <p className="text-xs italic text-[#6B6560] mt-0.5"
                     style={{ fontFamily: "var(--font-cormorant)", fontSize: "0.9rem" }}>
                     {service.nameEs}
                   </p>
@@ -117,7 +117,7 @@ export default function ServicesMinimal({ salon }: Props) {
                   <p style={{ fontFamily: "var(--font-playfair)", fontSize: "1.05rem", fontWeight: 400, color: "#1A1612" }}>
                     {service.name}
                   </p>
-                  <p className="text-xs italic text-[#ABA6A1] mt-0.5"
+                  <p className="text-xs italic text-[#6B6560] mt-0.5"
                     style={{ fontFamily: "var(--font-cormorant)", fontSize: "0.9rem" }}>
                     {service.nameEs}
                   </p>
@@ -139,12 +139,12 @@ export default function ServicesMinimal({ salon }: Props) {
             {pick(lang, "Questions about pricing? We're happy to help.", "¿Preguntas sobre precios? Con gusto te ayudamos.")}
           </p>
           <div className="flex flex-wrap justify-center gap-3 ml-auto">
-            <a href={`tel:${salon.phone}`}
+            <a href={`tel:+1${salon.phone}`}
               className="inline-flex items-center gap-2 px-7 py-3 text-sm font-medium text-white hover:opacity-90 transition-opacity"
               style={{ backgroundColor: salon.accentColor, borderRadius: "30px", fontFamily: "var(--font-dm-sans)" }}>
               {t.call} · {salon.phoneFormatted}
             </a>
-            <a href={`https://wa.me/${salon.phone}`} target="_blank" rel="noopener noreferrer"
+            <a href={`https://wa.me/1${salon.phone}`} target="_blank" rel="noopener noreferrer"
               className="inline-flex items-center gap-2 px-7 py-3 text-sm font-medium border text-[#1A1612] hover:border-[#1A1612] transition-colors"
               style={{ borderColor: "#D4CFC9", borderRadius: "30px", fontFamily: "var(--font-dm-sans)" }}>
               {t.whatsapp}

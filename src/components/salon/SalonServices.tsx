@@ -90,7 +90,7 @@ export default function SalonServices({ salon }: Props) {
           </span>
         </p>
         <a
-          href={`tel:${salon.phone}`}
+          href={`tel:+1${salon.phone}`}
           className="inline-flex items-center gap-2 px-6 py-3 text-sm font-medium text-white transition-opacity hover:opacity-90"
           style={{ backgroundColor: salon.accentColor, borderRadius: "3px", fontFamily: "var(--font-dm-sans)" }}
         >

@@ -6,11 +6,13 @@ import { motion } from "framer-motion"
 import Image from "next/image"
 import type { Salon } from "@/data/salons"
 import { getSalonImages } from "@/data/salonImages"
+import { getSalonVideo } from "@/data/salonVideos"
 import { useLanguage, pick } from "@/contexts/LanguageContext"
 
 export default function HeroSoftBoutique({ salon }: { salon: Salon }) {
   const { t, lang } = useLanguage()
   const { hero: imgSrc } = getSalonImages(salon.slug)
+  const videoSrc = getSalonVideo(salon.slug)
 
   return (
     <section className="min-h-screen bg-[#FDFAF7] flex flex-col md:flex-row overflow-hidden">
@@ -78,7 +80,7 @@ export default function HeroSoftBoutique({ salon }: { salon: Salon }) {
         {/* Bottom: CTAs + address */}
         <div>
           <div className="flex flex-wrap gap-3 mb-8">
-            <a href={`tel:${salon.phone}`}
+            <a href={`tel:+1${salon.phone}`}
               className="inline-flex items-center gap-2 px-7 py-3.5 text-sm font-medium text-white transition-opacity hover:opacity-90"
               style={{ backgroundColor: salon.accentColor, borderRadius: "30px", fontFamily: "var(--font-dm-sans)" }}>
               {t.callUs} · {salon.phoneFormatted}
@@ -89,7 +91,7 @@ export default function HeroSoftBoutique({ salon }: { salon: Salon }) {
               {t.viewServices}
             </a>
           </div>
-          <p className="text-xs text-[#9A9490] font-light"
+          <p className="text-xs text-[#6B6560] font-light"
             style={{ fontFamily: "var(--font-dm-sans)" }}>
             {salon.address}, {salon.city}, NJ · {salon.hours}
           </p>
@@ -108,14 +110,28 @@ export default function HeroSoftBoutique({ salon }: { salon: Salon }) {
             overflow: "hidden",
           }}
         >
-          <Image
-            src={imgSrc}
-            alt={salon.name}
-            fill
-            priority
-            className="object-cover object-top"
-            sizes="(max-width: 768px) 100vw, 52vw"
-          />
+          {videoSrc ? (
+            <video
+              autoPlay
+              muted
+              loop
+              playsInline
+              className="hero-video absolute inset-0 w-full h-full object-cover object-top"
+            >
+              <source src={videoSrc} type="video/mp4" />
+            </video>
+          ) : (
+            <Image
+              src={imgSrc}
+              alt={salon.name}
+              fill
+              priority
+              className="object-cover object-top"
+              sizes="(max-width: 768px) 100vw, 52vw"
+            />
+          )}
+          {/* Dark overlay for readability */}
+          <div className="absolute inset-0" style={{ backgroundColor: "rgba(0,0,0,0.4)" }} />
           {/* Subtle accent tint at bottom */}
           <div className="absolute bottom-0 left-0 right-0 h-32"
             style={{ background: `linear-gradient(to top, ${salon.accentColor}30, transparent)` }} />

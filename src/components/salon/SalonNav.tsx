@@ -36,8 +36,8 @@ export default function SalonNav({ salon }: Props) {
 
   return (
     <header
-      className={`fixed top-0 left-0 right-0 z-40 transition-all duration-300 ${
-        scrolled ? "bg-[#FAF7F4]/95 backdrop-blur-md border-b border-[#E2DDD9]" : "bg-transparent"
+      className={`fixed top-0 left-0 right-0 z-40 transition-all duration-300 bg-[#FAF7F4]/95 backdrop-blur-md ${
+        scrolled ? "border-b border-[#E2DDD9] shadow-sm" : "border-b border-transparent"
       }`}
     >
       {/* Scroll progress bar */}
@@ -78,7 +78,7 @@ export default function SalonNav({ salon }: Props) {
         <div className="hidden md:flex items-center gap-3">
           <LanguageToggle accentColor={salon.accentColor} variant="nav" />
           <a
-            href={`tel:${salon.phone}`}
+            href={`tel:+1${salon.phone}`}
             className="nav-call-pulse inline-flex items-center gap-2 px-5 py-2.5 text-sm font-medium text-white transition-opacity hover:opacity-90"
             style={{ backgroundColor: salon.accentColor, fontFamily: "var(--font-dm-sans)", borderRadius: "3px" }}
           >
@@ -130,7 +130,7 @@ export default function SalonNav({ salon }: Props) {
           </div>
 
           <a
-            href={`tel:${salon.phone}`}
+            href={`tel:+1${salon.phone}`}
             className="mt-auto inline-flex items-center justify-center py-3.5 text-sm font-medium text-white"
             style={{ backgroundColor: salon.accentColor, borderRadius: "3px" }}
           >

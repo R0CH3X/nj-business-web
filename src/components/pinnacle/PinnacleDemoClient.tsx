@@ -3,11 +3,11 @@
 import { useState, useEffect, useRef } from "react"
 import { motion, useInView, useMotionValue, animate } from "framer-motion"
 
-// ─── Video URLs (Pexels, free stock, verified) ────────────────────────────────
-// Hero: plomero trabajando bajo fregadero, tuberías de cobre, close-up profesional
-const HERO_VIDEO = "https://videos.pexels.com/video-files/6419111/6419111-uhd_2560_1440_25fps.mp4"
-// Services: reparación de tuberías, agua fluyendo, ambiente de trabajo real
-const SERVICES_VIDEO = "https://videos.pexels.com/video-files/4108626/4108626-uhd_2560_1440_25fps.mp4"
+// ─── Videos (stock gratuito, autohospedados en /public/videos) ────────────────
+// Hero: plomero revisando instalaciones durante la construcción de una casa
+const HERO_VIDEO = "/videos/pinnacle-hero.mp4"
+// Services: reparación de tuberías, agua fluyendo
+const SERVICES_VIDEO = "/videos/pinnacle-services.mp4"
 
 // ─── Design tokens ────────────────────────────────────────────────────────────
 const ACCENT   = "#3b9eff"
@@ -57,6 +57,8 @@ function FadingVideo({ src, style }: { src: string; style?: React.CSSProperties 
     video.addEventListener("loadeddata", onLoaded)
     video.addEventListener("timeupdate", onTimeUpdate)
     video.addEventListener("ended", onEnded)
+    // Local files can finish loading before listeners attach — fire manually
+    if (video.readyState >= 2) onLoaded()
     return () => {
       cancelAnimationFrame(rafRef.current)
       video.removeEventListener("loadeddata", onLoaded)

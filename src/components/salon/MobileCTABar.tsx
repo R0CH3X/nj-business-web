@@ -12,7 +12,7 @@ export default function MobileCTABar({ salon }: Props) {
   return (
     <div className="mobile-cta-bar md:hidden items-stretch">
       <a
-        href={`tel:${salon.phone}`}
+        href={`tel:+1${salon.phone}`}
         className="flex-[1.2] flex items-center justify-center gap-2 py-4 text-sm font-medium text-white"
         style={{ backgroundColor: salon.accentColor, fontFamily: "var(--font-dm-sans)" }}
       >
@@ -22,9 +22,9 @@ export default function MobileCTABar({ salon }: Props) {
         {t.mobileCall}
       </a>
       <a
-        href={`https://wa.me/${salon.phone}`}
+        href={`https://wa.me/1${salon.phone}`}
         target="_blank" rel="noopener noreferrer"
-        className="whatsapp-glow flex-[1.2] flex items-center justify-center gap-2 py-4 text-sm font-medium text-white"
+        className="whatsapp-glow flex-[1.2] flex items-center justify-center gap-2 py-4 text-sm font-medium text-[#1A1612]"
         style={{ backgroundColor: "#25D366", fontFamily: "var(--font-dm-sans)" }}
       >
         <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">

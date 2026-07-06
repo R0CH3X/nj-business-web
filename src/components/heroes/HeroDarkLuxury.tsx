@@ -6,11 +6,13 @@ import { motion } from "framer-motion"
 import Image from "next/image"
 import type { Salon } from "@/data/salons"
 import { getSalonImages } from "@/data/salonImages"
+import { getSalonVideo } from "@/data/salonVideos"
 import { useLanguage, pick } from "@/contexts/LanguageContext"
 
 export default function HeroDarkLuxury({ salon }: { salon: Salon }) {
   const { t, lang } = useLanguage()
   const { hero: portraitSrc } = getSalonImages(salon.slug)
+  const videoSrc = getSalonVideo(salon.slug)
 
   // Accent-tinted dark: eg violet → very dark purple bg
   const darkBg = "#0C0A12"
@@ -20,16 +22,30 @@ export default function HeroDarkLuxury({ salon }: { salon: Salon }) {
       className="relative min-h-screen flex overflow-hidden"
       style={{ backgroundColor: darkBg }}
     >
-      {/* LEFT: Portrait photo — takes 42% of screen, no gap, no border-radius */}
-      <div className="hidden md:block relative w-[42%] h-screen flex-shrink-0">
-        <Image
-          src={portraitSrc}
-          alt={salon.name}
-          fill
-          priority
-          className="object-cover object-center"
-          sizes="42vw"
-        />
+      {/* LEFT: Portrait video/photo — takes 42% of screen, no gap, no border-radius */}
+      <div className="hidden md:block relative w-[42%] h-screen flex-shrink-0 overflow-hidden">
+        {videoSrc ? (
+          <video
+            autoPlay
+            muted
+            loop
+            playsInline
+            className="hero-video absolute inset-0 w-full h-full object-cover object-center"
+          >
+            <source src={videoSrc} type="video/mp4" />
+          </video>
+        ) : (
+          <Image
+            src={portraitSrc}
+            alt={salon.name}
+            fill
+            priority
+            className="object-cover object-center"
+            sizes="42vw"
+          />
+        )}
+        {/* Dark overlay for readability */}
+        <div className="absolute inset-0" style={{ backgroundColor: "rgba(0,0,0,0.4)" }} />
         {/* Gradient merging into dark right side */}
         <div className="absolute inset-0"
           style={{ background: `linear-gradient(to right, transparent 60%, ${darkBg} 100%)` }} />
@@ -38,16 +54,29 @@ export default function HeroDarkLuxury({ salon }: { salon: Salon }) {
           style={{ backgroundColor: salon.accentColor }} />
       </div>
 
-      {/* Mobile photo — full bleed top, text below */}
-      <div className="md:hidden absolute inset-0">
-        <Image
-          src={portraitSrc}
-          alt={salon.name}
-          fill
-          priority
-          className="object-cover object-top"
-          sizes="100vw"
-        />
+      {/* Mobile: video/photo — full bleed, text floats above */}
+      <div className="md:hidden absolute inset-0 overflow-hidden">
+        {videoSrc ? (
+          <video
+            autoPlay
+            muted
+            loop
+            playsInline
+            className="hero-video absolute inset-0 w-full h-full object-cover object-top"
+          >
+            <source src={videoSrc} type="video/mp4" />
+          </video>
+        ) : (
+          <Image
+            src={portraitSrc}
+            alt={salon.name}
+            fill
+            priority
+            className="object-cover object-top"
+            sizes="100vw"
+          />
+        )}
+        <div className="absolute inset-0" style={{ backgroundColor: "rgba(0,0,0,0.4)" }} />
         <div className="absolute inset-0"
           style={{ background: `linear-gradient(to top, ${darkBg} 45%, transparent 80%)` }} />
       </div>
@@ -61,7 +90,7 @@ export default function HeroDarkLuxury({ salon }: { salon: Salon }) {
       >
         {/* Salon name — small caps, spaced */}
         <p className="text-xs font-medium tracking-[0.3em] uppercase mb-8"
-          style={{ color: salon.accentColor, fontFamily: "var(--font-dm-sans)" }}>
+          style={{ color: `color-mix(in srgb, ${salon.accentColor} 55%, white)`, fontFamily: "var(--font-dm-sans)" }}>
           {salon.city}, New Jersey
         </p>
 
@@ -108,7 +137,7 @@ export default function HeroDarkLuxury({ salon }: { salon: Salon }) {
 
         {/* CTAs */}
         <div className="flex flex-wrap gap-3">
-          <a href={`tel:${salon.phone}`}
+          <a href={`tel:+1${salon.phone}`}
             className="inline-flex items-center gap-2 px-7 py-3.5 text-sm font-medium text-white transition-opacity hover:opacity-85"
             style={{ backgroundColor: salon.accentColor, borderRadius: "2px", fontFamily: "var(--font-dm-sans)" }}>
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -131,7 +160,7 @@ export default function HeroDarkLuxury({ salon }: { salon: Salon }) {
         </div>
 
         {/* Bottom address */}
-        <p className="mt-14 text-xs font-light tracking-wider text-[#3A3540]"
+        <p className="mt-14 text-xs font-light tracking-wider text-[#A09A95]"
           style={{ fontFamily: "var(--font-dm-sans)" }}>
           {salon.address} · {salon.city}, NJ · {salon.hours}
         </p>

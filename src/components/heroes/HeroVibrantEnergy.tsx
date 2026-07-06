@@ -6,24 +6,38 @@ import { motion } from "framer-motion"
 import Image from "next/image"
 import type { Salon } from "@/data/salons"
 import { getSalonImages } from "@/data/salonImages"
+import { getSalonVideo } from "@/data/salonVideos"
 import { useLanguage, pick } from "@/contexts/LanguageContext"
 
 export default function HeroVibrantEnergy({ salon }: { salon: Salon }) {
   const { t, lang } = useLanguage()
   const { hero: imgSrc } = getSalonImages(salon.slug)
+  const videoSrc = getSalonVideo(salon.slug)
 
   return (
     <section className="relative min-h-screen overflow-hidden" style={{ backgroundColor: salon.accentLight }}>
-      {/* Full-bleed background photo with strong overlay */}
-      <div className="absolute inset-0 z-0">
-        <Image
-          src={imgSrc}
-          alt={salon.name}
-          fill
-          priority
-          className="object-cover object-center"
-          sizes="100vw"
-        />
+      {/* Full-bleed background video/photo with strong overlay */}
+      <div className="absolute inset-0 z-0 overflow-hidden">
+        {videoSrc ? (
+          <video
+            autoPlay
+            muted
+            loop
+            playsInline
+            className="hero-video absolute inset-0 w-full h-full object-cover object-center"
+          >
+            <source src={videoSrc} type="video/mp4" />
+          </video>
+        ) : (
+          <Image
+            src={imgSrc}
+            alt={salon.name}
+            fill
+            priority
+            className="object-cover object-center"
+            sizes="100vw"
+          />
+        )}
         <div className="absolute inset-0" style={{
           background: `linear-gradient(135deg, ${salon.accentColor}E5 0%, ${salon.accentColor}99 40%, transparent 75%)`
         }} />
@@ -80,12 +94,12 @@ export default function HeroVibrantEnergy({ salon }: { salon: Salon }) {
 
           {/* CTAs — white + transparent */}
           <div className="flex flex-wrap gap-3">
-            <a href={`tel:${salon.phone}`}
+            <a href={`tel:+1${salon.phone}`}
               className="inline-flex items-center gap-2 px-7 py-4 text-sm font-semibold text-[#1A1612] transition-opacity hover:opacity-90"
               style={{ backgroundColor: "#FFFFFF", borderRadius: "3px", fontFamily: "var(--font-dm-sans)" }}>
               {t.callNow} · {salon.phoneFormatted}
             </a>
-            <a href={`https://wa.me/${salon.phone}`} target="_blank" rel="noopener noreferrer"
+            <a href={`https://wa.me/1${salon.phone}`} target="_blank" rel="noopener noreferrer"
               className="inline-flex items-center gap-2 px-7 py-4 text-sm font-medium text-white border border-white/30 hover:bg-white/10 transition-colors"
               style={{ borderRadius: "3px", fontFamily: "var(--font-dm-sans)" }}>
               {t.whatsapp}

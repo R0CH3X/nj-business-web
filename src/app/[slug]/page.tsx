@@ -54,7 +54,7 @@ export default async function SalonPage({ params }: Props) {
         dangerouslySetInnerHTML={{
           __html: JSON.stringify({
             "@context": "https://schema.org",
-            "@type": "BeautySalon",
+            "@type": salon.schemaType ?? "BeautySalon",
             name: salon.name,
             address: {
               "@type": "PostalAddress",

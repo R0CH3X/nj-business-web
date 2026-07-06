@@ -6,16 +6,18 @@ import { motion } from "framer-motion"
 import Image from "next/image"
 import type { Salon } from "@/data/salons"
 import { getSalonImages } from "@/data/salonImages"
+import { getSalonVideo } from "@/data/salonVideos"
 import { useLanguage, pick } from "@/contexts/LanguageContext"
 
 export default function HeroMagazine({ salon }: { salon: Salon }) {
   const { t, lang } = useLanguage()
   const { hero: imgSrc } = getSalonImages(salon.slug)
+  const videoSrc = getSalonVideo(salon.slug)
 
   return (
     <section className="relative min-h-screen bg-[#FAF7F4] overflow-hidden">
       {/* Magazine masthead — top full width bar */}
-      <div className="absolute top-0 left-0 right-0 z-20 flex items-center justify-between px-8 md:px-12 py-5 border-b border-[#E2DDD9]">
+      <div className="absolute top-16 left-0 right-0 z-20 flex items-center justify-between px-8 md:px-12 py-5 border-b border-[#E2DDD9]">
         <div>
           <p className="text-xs font-medium tracking-[0.3em] uppercase text-[#6B6560]"
             style={{ fontFamily: "var(--font-dm-sans)" }}>
@@ -36,26 +38,40 @@ export default function HeroMagazine({ salon }: { salon: Salon }) {
 
       {/* Magazine layout grid */}
       <motion.div
-        className="min-h-screen pt-16 grid md:grid-cols-12 md:grid-rows-1"
+        className="min-h-screen pt-36 grid md:grid-cols-12 md:grid-rows-1"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ duration: 0.8, delay: 0.1, ease: [0.22, 1, 0.36, 1] }}
       >
-        {/* Main photo — takes columns 1-7 */}
-        <div className="relative md:col-span-7 min-h-[50vh] md:min-h-screen">
-          <Image
-            src={imgSrc}
-            alt={salon.name}
-            fill
-            priority
-            className="object-cover object-top"
-            sizes="(max-width: 768px) 100vw, 58vw"
-          />
+        {/* Main video/photo — takes columns 1-7 */}
+        <div className="relative md:col-span-7 min-h-[50vh] md:min-h-screen overflow-hidden">
+          {videoSrc ? (
+            <video
+              autoPlay
+              muted
+              loop
+              playsInline
+              className="hero-video absolute inset-0 w-full h-full object-cover object-top"
+            >
+              <source src={videoSrc} type="video/mp4" />
+            </video>
+          ) : (
+            <Image
+              src={imgSrc}
+              alt={salon.name}
+              fill
+              priority
+              className="object-cover object-top"
+              sizes="(max-width: 768px) 100vw, 58vw"
+            />
+          )}
+          {/* Dark overlay so "Glamour" text and stripe stay readable */}
+          <div className="absolute inset-0" style={{ backgroundColor: "rgba(0,0,0,0.35)" }} />
           {/* Accent stripe on the left edge of photo */}
-          <div className="absolute left-0 top-0 bottom-0 w-1.5" style={{ backgroundColor: salon.accentColor }} />
+          <div className="absolute left-0 top-0 bottom-0 w-1.5 z-10" style={{ backgroundColor: salon.accentColor }} />
 
           {/* BIG overlapping headline — magazine cover style */}
-          <div className="absolute bottom-0 left-0 right-0 p-8 md:p-12">
+          <div className="absolute bottom-0 left-0 right-0 p-8 md:p-12 z-10">
             <p
               style={{
                 fontFamily: "var(--font-playfair)",
@@ -131,7 +147,7 @@ export default function HeroMagazine({ salon }: { salon: Salon }) {
 
           <div>
             <div className="flex flex-col gap-3 mb-8">
-              <a href={`tel:${salon.phone}`}
+              <a href={`tel:+1${salon.phone}`}
                 className="inline-flex items-center justify-center gap-2 py-3.5 text-sm font-medium text-white transition-opacity hover:opacity-90"
                 style={{ backgroundColor: salon.accentColor, borderRadius: "2px", fontFamily: "var(--font-dm-sans)" }}>
                 {pick(lang, "Book", "Reservar")} · {salon.phoneFormatted}
@@ -144,7 +160,7 @@ export default function HeroMagazine({ salon }: { salon: Salon }) {
                 </a>
               )}
             </div>
-            <p className="text-xs text-[#9A9490]" style={{ fontFamily: "var(--font-dm-sans)" }}>
+            <p className="text-xs text-[#6B6560]" style={{ fontFamily: "var(--font-dm-sans)" }}>
               {salon.address}, {salon.city}, NJ · {salon.hours}
             </p>
           </div>

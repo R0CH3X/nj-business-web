@@ -44,7 +44,7 @@ export default function SalonAbout({ salon }: Props) {
             transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1] as const, delay: 0.1 }}
           >
             <p className="text-xs font-medium tracking-widest uppercase mb-6"
-              style={{ fontFamily: "var(--font-dm-sans)", color: salon.accentColor }}>
+              style={{ fontFamily: "var(--font-dm-sans)", color: `color-mix(in srgb, ${salon.accentColor} 55%, white)` }}>
               {t.aboutEyebrow}
             </p>
 
@@ -76,7 +76,7 @@ export default function SalonAbout({ salon }: Props) {
             {/* Team */}
             {salon.team && salon.team.length > 0 && (
               <div className="border-t border-[#2A2520] pt-8">
-                <p className="text-xs font-medium tracking-widest uppercase text-[#6B6560] mb-4"
+                <p className="text-xs font-medium tracking-widest uppercase text-[#A09A95] mb-4"
                   style={{ fontFamily: "var(--font-dm-sans)" }}>
                   {t.ourTeam}
                 </p>
@@ -86,7 +86,7 @@ export default function SalonAbout({ salon }: Props) {
                       <span className="text-[#FAF7F4] font-light" style={{ fontFamily: "var(--font-dm-sans)" }}>
                         {member.name}
                       </span>
-                      <span className="text-sm font-light text-[#6B6560] italic"
+                      <span className="text-sm font-light text-[#A09A95] italic"
                         style={{ fontFamily: "var(--font-cormorant)", fontSize: "1rem" }}>
                         {pick(lang, member.role, member.roleEs)}
                       </span>

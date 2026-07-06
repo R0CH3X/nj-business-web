@@ -98,7 +98,7 @@ export default function ServicesGrid({ salon }: Props) {
                 >
                   {service.name}
                 </h3>
-                <p className="mt-1 italic text-[#8A8480]"
+                <p className="mt-1 italic text-[#6B6560]"
                   style={{ fontFamily: "var(--font-cormorant)", fontSize: "1.05rem" }}>
                   {service.nameEs}
                 </p>
@@ -108,7 +108,7 @@ export default function ServicesGrid({ salon }: Props) {
 
                 <div className="flex items-center justify-between">
                   <a
-                    href={`tel:${salon.phone}`}
+                    href={`tel:+1${salon.phone}`}
                     className="text-xs font-medium tracking-widest uppercase transition-colors"
                     style={{ color: salon.accentColor, fontFamily: "var(--font-dm-sans)" }}
                   >
@@ -132,12 +132,12 @@ export default function ServicesGrid({ salon }: Props) {
             </p>
           </div>
           <div className="flex flex-wrap gap-3">
-            <a href={`tel:${salon.phone}`}
+            <a href={`tel:+1${salon.phone}`}
               className="inline-flex items-center gap-2 px-6 py-3 text-sm font-semibold text-white hover:opacity-90 transition-opacity"
               style={{ backgroundColor: salon.accentColor, borderRadius: "4px", fontFamily: "var(--font-dm-sans)" }}>
               {salon.phoneFormatted}
             </a>
-            <a href={`https://wa.me/${salon.phone}`} target="_blank" rel="noopener noreferrer"
+            <a href={`https://wa.me/1${salon.phone}`} target="_blank" rel="noopener noreferrer"
               className="inline-flex items-center gap-2 px-6 py-3 text-sm font-medium border text-[#1A1612] hover:bg-white transition-colors"
               style={{ borderColor: salon.accentColor, borderRadius: "4px", fontFamily: "var(--font-dm-sans)" }}>
               {t.whatsapp}
