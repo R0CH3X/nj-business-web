@@ -313,19 +313,23 @@ export default function TradesSystem() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: HEADLINE_WORDS.length * 0.1 + 0.4, duration: 0.5 }}
           >
-            <motion.button onClick={() => scrollTo("pricing")}
+            <motion.a
+              href="https://buy.stripe.com/eVq9AT8zDfwV8Sn1EI8og0a"
+              target="_blank"
+              rel="noopener noreferrer"
               style={{
                 display: "inline-flex", alignItems: "center", gap: "8px",
                 background: C.limePulse, color: C.groundIron, border: "none",
                 borderRadius: "9999px", padding: "15px 32px",
                 fontSize: "15px", fontWeight: 700, letterSpacing: "0.2px",
                 cursor: "pointer", fontFamily: bodyFont, textTransform: "uppercase",
+                textDecoration: "none",
               }}
               whileHover={{ scale: 1.05, boxShadow: `0 0 28px rgba(127,238,100,0.45)` }}
               whileTap={{ scale: 0.97 }} transition={{ duration: 0.2 }}
             >
               Get Started — $697/mo
-            </motion.button>
+            </motion.a>
 
             <motion.button onClick={() => scrollTo("system")}
               style={{
@@ -721,7 +725,10 @@ export default function TradesSystem() {
             </div>
 
             {/* Primary CTA */}
-            <motion.a href="#"
+            <motion.a
+              href="https://buy.stripe.com/eVq9AT8zDfwV8Sn1EI8og0a"
+              target="_blank"
+              rel="noopener noreferrer"
               style={{
                 display: "block", background: C.limePulse, color: C.groundIron,
                 borderRadius: "12px", padding: "16px 32px",
@@ -820,7 +827,10 @@ export default function TradesSystem() {
             No setup fee · Cancel anytime
           </div>
         </div>
-        <motion.a href="#"
+        <motion.a
+          href="https://buy.stripe.com/eVq9AT8zDfwV8Sn1EI8og0a"
+          target="_blank"
+          rel="noopener noreferrer"
           style={{
             background: C.limePulse, color: C.groundIron, border: "none",
             borderRadius: "9999px", padding: "11px 20px",
