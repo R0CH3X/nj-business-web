@@ -6,13 +6,14 @@ import { motion } from "framer-motion"
 import Image from "next/image"
 import type { Salon } from "@/data/salons"
 import { getSalonImages } from "@/data/salonImages"
-import { getSalonVideo } from "@/data/salonVideos"
+import { getSalonVideo, getSalonVideoPoster } from "@/data/salonVideos"
 import { useLanguage, pick } from "@/contexts/LanguageContext"
 
 export default function HeroDarkLuxury({ salon }: { salon: Salon }) {
   const { t, lang } = useLanguage()
   const { hero: portraitSrc } = getSalonImages(salon.slug)
   const videoSrc = getSalonVideo(salon.slug)
+  const videoPoster = getSalonVideoPoster(salon.slug)
 
   // Accent-tinted dark: eg violet → very dark purple bg
   const darkBg = "#0C0A12"
@@ -30,7 +31,7 @@ export default function HeroDarkLuxury({ salon }: { salon: Salon }) {
             muted
             loop
             playsInline
-            poster={portraitSrc}
+            poster={videoPoster ?? undefined}
             className="hero-video absolute inset-0 w-full h-full object-cover object-center"
           >
             <source src={videoSrc} type="video/mp4" />
@@ -63,8 +64,8 @@ export default function HeroDarkLuxury({ salon }: { salon: Salon }) {
             muted
             loop
             playsInline
-            poster={portraitSrc}
-            className="hero-video absolute inset-0 w-full h-full object-cover object-top"
+            poster={videoPoster ?? undefined}
+            className="hero-video absolute inset-0 w-full h-full object-cover object-center"
           >
             <source src={videoSrc} type="video/mp4" />
           </video>

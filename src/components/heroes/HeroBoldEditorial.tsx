@@ -7,7 +7,7 @@ import { motion } from "framer-motion"
 import Image from "next/image"
 import type { Salon } from "@/data/salons"
 import { getSalonImages } from "@/data/salonImages"
-import { getSalonVideo } from "@/data/salonVideos"
+import { getSalonVideo, getSalonVideoPoster } from "@/data/salonVideos"
 import { useLanguage, pick } from "@/contexts/LanguageContext"
 
 const lineVariants = {
@@ -23,6 +23,7 @@ export default function HeroBoldEditorial({ salon }: { salon: Salon }) {
   const { t, lang } = useLanguage()
   const { hero: imgSrc } = getSalonImages(salon.slug)
   const videoSrc = getSalonVideo(salon.slug)
+  const videoPoster = getSalonVideoPoster(salon.slug)
 
   return (
     <section className="relative min-h-screen bg-[#0A0907] overflow-hidden flex flex-col">
@@ -101,17 +102,31 @@ export default function HeroBoldEditorial({ salon }: { salon: Salon }) {
       {/* Video/photo bleeds to bottom-right — cropped, raw, editorial */}
       <div className="absolute bottom-0 right-0 w-[45%] md:w-[38%] h-[55%] md:h-[70%] z-0 overflow-hidden">
         {videoSrc ? (
-          <video
-            autoPlay
-            muted
-            loop
-            playsInline
-            poster={imgSrc}
-            className="hero-video absolute inset-0 w-full h-full object-cover object-top"
-            style={{ filter: "grayscale(20%) contrast(1.1)" }}
-          >
-            <source src={videoSrc} type="video/mp4" />
-          </video>
+          <>
+            {/* This frame is only ~169px wide on a phone, which crops 16:9 footage
+                down to a ~21% vertical sliver. The portrait photo fills it properly,
+                so the video is desktop-only here. */}
+            <Image
+              src={imgSrc}
+              alt={salon.name}
+              fill
+              priority
+              className="md:hidden object-cover object-top"
+              style={{ filter: "grayscale(20%) contrast(1.1)" }}
+              sizes="45vw"
+            />
+            <video
+              autoPlay
+              muted
+              loop
+              playsInline
+              poster={videoPoster ?? undefined}
+              className="hero-video hidden md:block absolute inset-0 w-full h-full object-cover object-center"
+              style={{ filter: "grayscale(20%) contrast(1.1)" }}
+            >
+              <source src={videoSrc} type="video/mp4" />
+            </video>
+          </>
         ) : (
           <Image
             src={imgSrc}

@@ -23,3 +23,13 @@ const SALON_VIDEOS: Record<string, string> = {
 export function getSalonVideo(slug: string): string | null {
   return SALON_VIDEOS[slug] ?? null
 }
+
+/**
+ * Poster frame grabbed from the video itself (ffmpeg, t=0.5s), so the still
+ * and the moving footage share one framing. Using the salon's portrait photo
+ * here instead made the hero visibly jump when the video took over: the photos
+ * are ~0.8 aspect, the footage is 1.78.
+ */
+export function getSalonVideoPoster(slug: string): string | null {
+  return SALON_VIDEOS[slug] ? `/videos/posters/${slug}.jpg` : null
+}

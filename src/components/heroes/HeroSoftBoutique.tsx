@@ -6,13 +6,14 @@ import { motion } from "framer-motion"
 import Image from "next/image"
 import type { Salon } from "@/data/salons"
 import { getSalonImages } from "@/data/salonImages"
-import { getSalonVideo } from "@/data/salonVideos"
+import { getSalonVideo, getSalonVideoPoster } from "@/data/salonVideos"
 import { useLanguage, pick } from "@/contexts/LanguageContext"
 
 export default function HeroSoftBoutique({ salon }: { salon: Salon }) {
   const { t, lang } = useLanguage()
   const { hero: imgSrc } = getSalonImages(salon.slug)
   const videoSrc = getSalonVideo(salon.slug)
+  const videoPoster = getSalonVideoPoster(salon.slug)
 
   return (
     <section className="min-h-screen bg-[#FDFAF7] flex flex-col md:flex-row overflow-hidden">
@@ -116,8 +117,8 @@ export default function HeroSoftBoutique({ salon }: { salon: Salon }) {
               muted
               loop
               playsInline
-              poster={imgSrc}
-              className="hero-video absolute inset-0 w-full h-full object-cover object-top"
+              poster={videoPoster ?? undefined}
+              className="hero-video absolute inset-0 w-full h-full object-cover object-center"
             >
               <source src={videoSrc} type="video/mp4" />
             </video>
