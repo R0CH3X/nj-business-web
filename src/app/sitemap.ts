@@ -3,7 +3,7 @@ import { salons } from "@/data/salons"
 
 export const dynamic = "force-static"
 
-const BASE_URL = "https://nj-business-web.netlify.app"
+const BASE_URL = "https://nj-salones.netlify.app"
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const salonEntries: MetadataRoute.Sitemap = salons.map((salon) => ({

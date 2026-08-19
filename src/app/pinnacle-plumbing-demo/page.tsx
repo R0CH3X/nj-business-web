@@ -19,12 +19,12 @@ export const metadata: Metadata = {
     title: "Pinnacle Plumbing Sewer & Drain | Ramsey NJ | 24/7 Emergency",
     description:
       "24/7 emergency plumber in Bergen County, NJ. 5.0★ on Google with 142 reviews. Drain cleaning, sewer repair, water heaters.",
-    url: "https://pinnacle-plumbing-demo.netlify.app",
+    url: "https://nj-salones.netlify.app/pinnacle-plumbing-demo",
     type: "website",
     locale: "en_US",
   },
   alternates: {
-    canonical: "https://pinnacle-plumbing-demo.netlify.app",
+    canonical: "https://nj-salones.netlify.app/pinnacle-plumbing-demo",
   },
 }
 
@@ -34,7 +34,7 @@ const schema = {
   name: "Pinnacle Plumbing Sewer & Drain",
   description:
     "24/7 emergency plumber serving Bergen County, Passaic County, and Morris County in North Jersey.",
-  url: "https://pinnacle-plumbing-demo.netlify.app",
+  url: "https://nj-salones.netlify.app/pinnacle-plumbing-demo",
   telephone: "+12014194016",
   address: {
     "@type": "PostalAddress",

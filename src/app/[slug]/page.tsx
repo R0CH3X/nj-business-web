@@ -25,7 +25,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   if (!salon) return {}
 
   const title = `${salon.name} | ${salon.city}, NJ`
-  const url = `https://nj-business-web.netlify.app/${salon.slug}`
+  const url = `https://nj-salones.netlify.app/${salon.slug}`
 
   return {
     title,
@@ -70,7 +70,7 @@ export default async function SalonPage({ params }: Props) {
               ratingValue: salon.rating,
               reviewCount: salon.reviewCount,
             },
-            url: `https://nj-business-web.netlify.app/${salon.slug}`,
+            url: `https://nj-salones.netlify.app/${salon.slug}`,
             openingHours: salon.hours,
             priceRange: "$$",
           }),

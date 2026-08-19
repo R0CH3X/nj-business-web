@@ -19,12 +19,12 @@ export const metadata: Metadata = {
     title: "ClimatePro HVAC | Trenton NJ | NATE-Certified Technicians",
     description:
       "4.9★ rated HVAC company in Trenton, NJ. Expert heating, cooling & air quality solutions. 18+ years serving New Jersey. Same-day service available.",
-    url: "https://nj-business-web.netlify.app/climatepro-hvac-demo",
+    url: "https://nj-salones.netlify.app/climatepro-hvac-demo",
     type: "website",
     locale: "en_US",
   },
   alternates: {
-    canonical: "https://nj-business-web.netlify.app/climatepro-hvac-demo",
+    canonical: "https://nj-salones.netlify.app/climatepro-hvac-demo",
   },
 }
 
@@ -34,7 +34,7 @@ const schema = {
   name: "ClimatePro HVAC",
   description:
     "NATE-certified HVAC company serving all of New Jersey. Expert heating, cooling, duct cleaning, and indoor air quality solutions.",
-  url: "https://nj-business-web.netlify.app/climatepro-hvac-demo",
+  url: "https://nj-salones.netlify.app/climatepro-hvac-demo",
   telephone: "+16095550371",
   address: {
     "@type": "PostalAddress",

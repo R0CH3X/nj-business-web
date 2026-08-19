@@ -19,12 +19,12 @@ export const metadata: Metadata = {
     title: "Apex Electrical Contractors | North Jersey | 5.0★ Licensed Electricians",
     description:
       "5.0★ rated electrical contractors in North Jersey. Panel upgrades, EV chargers, 24/7 emergency. Serving Bergen, Hudson & Passaic County.",
-    url: "https://nj-business-web.netlify.app/apex-electrical-demo",
+    url: "https://nj-salones.netlify.app/apex-electrical-demo",
     type: "website",
     locale: "en_US",
   },
   alternates: {
-    canonical: "https://nj-business-web.netlify.app/apex-electrical-demo",
+    canonical: "https://nj-salones.netlify.app/apex-electrical-demo",
   },
 }
 
@@ -34,7 +34,7 @@ const schema = {
   name: "Apex Electrical Contractors",
   description:
     "Licensed and fully insured electrical contractors serving Bergen, Hudson, and Passaic County in North Jersey.",
-  url: "https://nj-business-web.netlify.app/apex-electrical-demo",
+  url: "https://nj-salones.netlify.app/apex-electrical-demo",
   telephone: "+12015550100",
   address: {
     "@type": "PostalAddress",

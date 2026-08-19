@@ -2,7 +2,7 @@ import Link from "next/link"
 import type { Metadata } from "next"
 import { salons } from "@/data/salons"
 
-const SITE_URL = "https://nj-business-web.netlify.app"
+const SITE_URL = "https://nj-salones.netlify.app"
 const TITLE = "NJ Beauty Salons — West New York, Guttenberg, North Bergen & Union City"
 const DESCRIPTION = "Find the best beauty salons in Hudson County, NJ. Expert hair, nails & full-service salons in West New York, Guttenberg, North Bergen, and Union City."
 
