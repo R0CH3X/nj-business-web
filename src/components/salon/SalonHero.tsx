@@ -101,18 +101,6 @@ export default function SalonHero({ salon }: Props) {
               </svg>
               Call Us / Llámanos
             </a>
-
-            {salon.whatsapp && (
-              <a
-                href={`https://wa.me/1${salon.phone}`}
-                className="inline-flex items-center gap-2.5 px-7 py-3.5 text-sm font-medium text-white transition-opacity hover:opacity-90"
-                style={{ backgroundColor: "#25D366", borderRadius: "3px", fontFamily: "var(--font-dm-sans)" }}
-                target="_blank" rel="noopener noreferrer"
-              >
-                WhatsApp
-              </a>
-            )}
-
             <a
               href="#services"
               className="inline-flex items-center gap-2 px-7 py-3.5 text-sm font-medium text-[#1A1612] border border-[#E2DDD9] hover:border-[#1A1612] transition-colors"

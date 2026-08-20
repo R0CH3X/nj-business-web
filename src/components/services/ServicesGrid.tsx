@@ -137,11 +137,6 @@ export default function ServicesGrid({ salon }: Props) {
               style={{ backgroundColor: salon.accentColor, borderRadius: "4px", fontFamily: "var(--font-dm-sans)" }}>
               {salon.phoneFormatted}
             </a>
-            <a href={`https://wa.me/1${salon.phone}`} target="_blank" rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 px-6 py-3 text-sm font-medium border text-[#1A1612] hover:bg-white transition-colors"
-              style={{ borderColor: salon.accentColor, borderRadius: "4px", fontFamily: "var(--font-dm-sans)" }}>
-              {t.whatsapp}
-            </a>
           </div>
         </div>
       </div>

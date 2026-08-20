@@ -37,7 +37,6 @@ const IMG = {
 const PHONE_RAW  = "6095550371"
 const PHONE_DISP = "(609) 555-0371"
 const CALL_URL   = `tel:+1${PHONE_RAW}`
-const WA_URL     = `https://wa.me/1${PHONE_RAW}?text=Hi!%20I%20need%20HVAC%20service%20in%20New%20Jersey.`
 
 const copy = {
   en: {
@@ -297,11 +296,6 @@ export default function ClimateProDemoClient() {
               borderRadius: 8, fontSize: 14, fontWeight: 600, textDecoration: "none",
               display: "flex", alignItems: "center", gap: 8,
             }}>📞 {t.cta1}</a>
-            <a href={WA_URL} target="_blank" rel="noopener noreferrer" style={{
-              background: "transparent", color: C.text, padding: "11px 24px",
-              borderRadius: 8, fontSize: 14, fontWeight: 500, textDecoration: "none",
-              border: `1px solid ${C.border}`, display: "flex", alignItems: "center", gap: 8,
-            }}>💬 {t.cta2}</a>
           </motion.div>
 
           {/* Trust pills */}
@@ -431,9 +425,6 @@ export default function ClimateProDemoClient() {
             <a href={CALL_URL} style={{ background: C.ctaBg, color: C.ctaTxt, padding: "13px 28px", borderRadius: 8, fontSize: 14, fontWeight: 600, textDecoration: "none", display: "flex", alignItems: "center", gap: 8 }}>
               📞 {t.cta1}
             </a>
-            <a href={WA_URL} target="_blank" rel="noopener noreferrer" style={{ background: "transparent", color: C.text, padding: "12px 28px", borderRadius: 8, fontSize: 14, fontWeight: 500, textDecoration: "none", border: `1px solid ${C.border}`, display: "flex", alignItems: "center", gap: 8 }}>
-              💬 {t.cta2}
-            </a>
           </div>
           <div style={{ display: "flex", flexWrap: "wrap", justifyContent: "center", gap: 28 }}>
             {t.contactDetails.map((d, i) => (
@@ -476,14 +467,11 @@ export default function ClimateProDemoClient() {
       <div style={{
         position: "fixed", bottom: 0, left: 0, right: 0, zIndex: 200,
         background: C.card, borderTop: `1px solid ${C.border}`,
-        display: "grid", gridTemplateColumns: "1fr 1fr auto",
+        display: "grid", gridTemplateColumns: "1fr auto",
         padding: "10px 12px", gap: 8,
       }}>
         <a href={CALL_URL} style={{ background: C.ctaBg, color: C.ctaTxt, borderRadius: 8, padding: "12px 0", textAlign: "center", fontSize: 13, fontWeight: 600, textDecoration: "none" }}>
           📞 {lang === "en" ? "Call Now" : "Llamar"}
-        </a>
-        <a href={WA_URL} target="_blank" rel="noopener noreferrer" style={{ background: "#25d366", color: "#fff", borderRadius: 8, padding: "12px 0", textAlign: "center", fontSize: 13, fontWeight: 600, textDecoration: "none" }}>
-          💬 WhatsApp
         </a>
         <button onClick={() => setLang(lang === "en" ? "es" : "en")} style={{ background: C.elev, border: `1px solid ${C.border}`, cursor: "pointer", color: C.sec, borderRadius: 6, padding: "12px 14px", fontWeight: 500, fontSize: 11 }}>
           {t.switchLang}

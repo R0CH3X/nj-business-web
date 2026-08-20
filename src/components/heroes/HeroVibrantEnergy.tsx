@@ -101,11 +101,6 @@ export default function HeroVibrantEnergy({ salon }: { salon: Salon }) {
               style={{ backgroundColor: "#FFFFFF", borderRadius: "3px", fontFamily: "var(--font-dm-sans)" }}>
               {t.callNow} · {salon.phoneFormatted}
             </a>
-            <a href={`https://wa.me/1${salon.phone}`} target="_blank" rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 px-7 py-4 text-sm font-medium text-white border border-white/30 hover:bg-white/10 transition-colors"
-              style={{ borderRadius: "3px", fontFamily: "var(--font-dm-sans)" }}>
-              {t.whatsapp}
-            </a>
           </div>
 
           {/* Address */}

@@ -12,7 +12,6 @@ const SERVICES_VIDEO = "/videos/pinnacle-services.mp4"
 // ─── Design tokens ────────────────────────────────────────────────────────────
 const ACCENT   = "#3b9eff"
 const CANVAS   = "#000000"
-const WA_URL   = "https://wa.me/12014194016"
 const CALL_URL = "tel:+12014194016"
 
 // ─── FadingVideo (rAF-driven — NO CSS transitions) ───────────────────────────
@@ -345,7 +344,6 @@ export default function PinnacleDemoClient() {
           <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 1.05, duration: 0.4 }}
             style={{ display: "flex", flexWrap: "wrap", gap: 10, justifyContent: "center", marginBottom: 28 }}>
             <a href={CALL_URL} className="pp-lg-strong" style={{ ...B, borderRadius: 9999, padding: "12px 24px", fontSize: 14, fontWeight: 600, color: "#fff", textDecoration: "none" }}>{t.cta1}</a>
-            <a href={WA_URL} target="_blank" rel="noopener noreferrer" style={{ ...B, color: "#fff", padding: "12px 24px", borderRadius: 9999, fontSize: 14, fontWeight: 500, textDecoration: "none", border: "1px solid rgba(255,255,255,0.25)" }}>{t.cta2}</a>
           </motion.div>
           <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 1.25, duration: 0.4 }}
             style={{ display: "flex", gap: 12, flexWrap: "wrap", justifyContent: "center" }}>
@@ -455,7 +453,6 @@ export default function PinnacleDemoClient() {
         <p style={{ ...B, fontSize: 14, color: "rgba(255,255,255,0.52)", marginBottom: 30, fontWeight: 300 }}>{t.finalSub}</p>
         <div style={{ display: "flex", gap: 12, justifyContent: "center", flexWrap: "wrap", marginBottom: 18 }}>
           <a href={CALL_URL} className="pp-lg-strong" style={{ ...B, borderRadius: 9999, padding: "13px 26px", fontSize: 15, fontWeight: 600, color: "#fff", textDecoration: "none" }}>{t.finalCta1}</a>
-          <a href={WA_URL} target="_blank" rel="noopener noreferrer" style={{ ...B, color: "rgba(255,255,255,0.58)", fontSize: 14, fontWeight: 500, textDecoration: "none", display: "flex", alignItems: "center" }}>{t.finalCta2}</a>
         </div>
         <div style={{ ...B, fontSize: 12, color: "rgba(255,255,255,0.28)" }}>{t.finalInfo}</div>
       </section>
@@ -477,9 +474,8 @@ export default function PinnacleDemoClient() {
       </footer>
 
       {/* ── MOBILE STICKY BAR ── */}
-      <div className="pp-sticky" style={{ position: "fixed", bottom: 0, left: 0, right: 0, zIndex: 200, gridTemplateColumns: "1fr 1fr", height: 64, background: "rgba(0,0,0,0.9)", backdropFilter: "blur(20px)", borderTop: "1px solid rgba(255,255,255,0.08)" }}>
+      <div className="pp-sticky" style={{ position: "fixed", bottom: 0, left: 0, right: 0, zIndex: 200, gridTemplateColumns: "1fr", height: 64, background: "rgba(0,0,0,0.9)", backdropFilter: "blur(20px)", borderTop: "1px solid rgba(255,255,255,0.08)" }}>
         <a href={CALL_URL} style={{ ...B, background: ACCENT, color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 14, fontWeight: 600, textDecoration: "none" }}>{t.callLabel}</a>
-        <a href={WA_URL} target="_blank" rel="noopener noreferrer" style={{ ...B, background: "#25D366", color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 14, fontWeight: 600, textDecoration: "none" }}>{t.waLabel}</a>
       </div>
     </div>
   )

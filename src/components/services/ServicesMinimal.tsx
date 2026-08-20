@@ -144,11 +144,6 @@ export default function ServicesMinimal({ salon }: Props) {
               style={{ backgroundColor: salon.accentColor, borderRadius: "30px", fontFamily: "var(--font-dm-sans)" }}>
               {t.call} · {salon.phoneFormatted}
             </a>
-            <a href={`https://wa.me/1${salon.phone}`} target="_blank" rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 px-7 py-3 text-sm font-medium border text-[#1A1612] hover:border-[#1A1612] transition-colors"
-              style={{ borderColor: "#D4CFC9", borderRadius: "30px", fontFamily: "var(--font-dm-sans)" }}>
-              {t.whatsapp}
-            </a>
           </div>
         </div>
       </div>
