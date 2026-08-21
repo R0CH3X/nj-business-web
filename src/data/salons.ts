@@ -98,7 +98,7 @@ export const salons: Salon[] = [
   },
   {
     slug: "nikki-maar-salon",
-    name: "NIKKI MAAR SALON",
+    name: "Nikki Maar Salon",
     template: "dark-luxury" as SalonTemplate,
     tagline: "Patient, kind, and talented.",
     taglineEs: "Paciencia, calidez y talento.",
@@ -117,8 +117,8 @@ export const salons: Salon[] = [
     accentColor: "#7c3aed",
     accentLight: "#ede9fe",
     type: "hair",
-    seoDescription: "NIKKI MAAR SALON in West New York, NJ — balayage, color, blowouts, braids & waxing. Women-owned, 4.7★ rated.",
-    seoDescriptionEs: "NIKKI MAAR SALON en West New York, NJ — balayage, color, blowout, trenzas y depilación. 4.7★.",
+    seoDescription: "Nikki Maar Salon in West New York, NJ — balayage, color, blowouts, braids & waxing. Women-owned, 4.7★ rated.",
+    seoDescriptionEs: "Nikki Maar Salon en West New York, NJ — balayage, color, blowout, trenzas y depilación. 4.7★.",
     keywords: ["nikki maar salon west new york", "balayage west new york nj", "braid bar hudson county", "hair salon park avenue west new york"],
     services: [
       { name: "Women's Haircut", nameEs: "Corte mujer" },

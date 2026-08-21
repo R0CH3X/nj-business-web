@@ -45,7 +45,6 @@ const copy = {
     h1b:     "Year-Round.",
     sub:     "Expert heating, cooling & air quality solutions for New Jersey homes. 4.9★ rated across 220+ Google reviews. 18+ years serving Trenton and all of NJ.",
     cta1:    `Call ${PHONE_DISP}`,
-    cta2:    "WhatsApp",
     nav:     ["Services", "About", "Reviews", "Contact"],
     navCta:  "Call Now",
     stats: [
@@ -78,7 +77,7 @@ const copy = {
       { name: "Kevin M.",   text: "Called at 11pm for a heating emergency. They came, no attitude, got it done. Genuine people who care about their customers." },
     ],
     contactTitle:   "Ready to Schedule?",
-    contactSub:     "Call, text, or WhatsApp. We respond within 30 minutes during business hours.",
+    contactSub:     "Call or text us. We respond within 30 minutes during business hours.",
     contactDetails: [
       { icon: "📍", txt: "890 Route 33, Trenton, NJ 08619" },
       { icon: "✉",  txt: "info@climateprohvac.com" },
@@ -93,7 +92,6 @@ const copy = {
     h1b:     "Cualquier Temporada.",
     sub:     "Soluciones expertas de calefacción, refrigeración y calidad del aire para hogares en Nueva Jersey. Calificación 4.9★ con 220+ reseñas en Google. 18+ años sirviendo Trenton y todo NJ.",
     cta1:    `Llamar ${PHONE_DISP}`,
-    cta2:    "WhatsApp",
     nav:     ["Servicios", "Nosotros", "Reseñas", "Contacto"],
     navCta:  "Llamar",
     stats: [
@@ -126,7 +124,7 @@ const copy = {
       { name: "Kevin M.",  text: "Llamé a las 11pm por emergencia de calefacción. Vinieron sin problema y lo resolvieron. Gente genuina que se preocupa por sus clientes." },
     ],
     contactTitle:   "¿Listo para Programar?",
-    contactSub:     "Llame, envíe mensaje o escriba por WhatsApp. Respondemos en 30 minutos en horario laboral.",
+    contactSub:     "Llame o envíe mensaje. Respondemos en 30 minutos en horario laboral.",
     contactDetails: [
       { icon: "📍", txt: "890 Route 33, Trenton, NJ 08619" },
       { icon: "✉",  txt: "info@climateprohvac.com" },
