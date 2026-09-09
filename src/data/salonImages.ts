@@ -117,8 +117,19 @@ export function getSalonImages(slug: string): SalonImageSet {
     }
   }
 
-  // Unsplash rotation fallback for salons without local photos
-  const index = Math.max(0, SLUG_ORDER.indexOf(slug as (typeof SLUG_ORDER)[number]))
+  // Unsplash rotation fallback for salons without local photos.
+  // Known demo slugs keep their curated order; every other slug (e.g. the
+  // prospect salons) derives a stable per-slug offset from a string hash so
+  // neighbours don't all land on the same photo set.
+  const known = SLUG_ORDER.indexOf(slug as (typeof SLUG_ORDER)[number])
+  let index: number
+  if (known >= 0) {
+    index = known
+  } else {
+    let h = 0
+    for (let i = 0; i < slug.length; i++) h = (h * 31 + slug.charCodeAt(i)) >>> 0
+    index = h % POOL.length
+  }
   const STEP = 7
   const offset = (index * STEP) % POOL.length
   const slice = Array.from({ length: 8 }, (_, k) => POOL[(offset + k) % POOL.length])

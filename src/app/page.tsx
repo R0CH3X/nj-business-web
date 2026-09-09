@@ -41,7 +41,7 @@ export default function DirectoryPage() {
 
       {/* Salon grid by city */}
       {cities.map((city) => {
-        const citySalons = salons.filter((s) => s.city === city)
+        const citySalons = salons.filter((s) => s.city === city && !s.prospect)
         if (!citySalons.length) return null
         return (
           <section key={city} className="py-12 px-6 md:px-10 max-w-7xl mx-auto">
