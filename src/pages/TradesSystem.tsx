@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
 
 /* ─────────────────────────────────────────────────────────────
    NJ Business Web — Trades System Landing Page
@@ -28,7 +28,6 @@ type Lang = "en" | "es";
 interface HeadlineWord { word: string; color: string; }
 interface Step         { label: string; desc: string; }
 interface FaqItem      { q: string; a: string; }
-interface ValueRow     { item: string; value: string; }
 interface DemoMsg      { from: "customer" | "assistant"; text: string; }
 
 interface Copy {
@@ -54,6 +53,8 @@ interface Copy {
   demoEyebrow: string;
   demoTitle: string;
   demoSub: string;
+  demoWindowLabel: string;
+  demoExampleLabel: string;
   demoMessages: DemoMsg[];
   leadAlertLabel: string;
   leadAlertServiceLabel: string; leadAlertService: string;
@@ -61,14 +62,13 @@ interface Copy {
   leadAlertUrgencyLabel: string; leadAlertUrgency: string;
   leadAlertPhoneLabel: string; leadAlertPhone: string;
   demoDisclaimer: string;
-  // Value table
-  mathEyebrow: string;
-  mathHeading: string;
-  tableColItem: string; tableColValue: string;
-  valueRows: ValueRow[];
-  totalLabel: string; totalStrike: string;
-  allOfThis: string;
-  cancelNote: string;
+  // Examples section
+  examplesEyebrow: string;
+  examplesHeading: string;
+  examplesSub: string;
+  // Final CTA section
+  finalCtaHeading: string;
+  finalCtaSub: string;
   // Pricing section
   pricingEyebrow: string;
   pricingHeading: string;
@@ -91,34 +91,35 @@ const COPY: Record<Lang, Copy> = {
     badge: "BUILT FOR LOCAL TRADES",
 
     headlineWords: [
-      { word: "THE",    color: C.phosphorWhite },
-      { word: "24/7",   color: C.phosphorWhite },
-      { word: "LEAD",   color: C.limePulse },
-      { word: "SYSTEM", color: C.limePulse },
-      { word: "FOR",    color: C.phosphorWhite },
-      { word: "LOCAL",  color: C.phosphorWhite },
-      { word: "TRADES", color: C.phosphorWhite },
+      { word: "A",          color: C.phosphorWhite },
+      { word: "WEBSITE",    color: C.phosphorWhite },
+      { word: "WITH",       color: C.phosphorWhite },
+      { word: "A",          color: C.phosphorWhite },
+      { word: "BILINGUAL",  color: C.phosphorWhite },
+      { word: "AI",         color: C.limePulse },
+      { word: "CHAT",       color: C.limePulse },
+      { word: "ASSISTANT",  color: C.limePulse },
     ],
 
-    subhead: "A professional website and bilingual digital receptionist that capture service requests while you're on the job.",
-    trustLine: "No setup fee. English + Spanish. Leads sent directly to your phone.",
+    subhead: "Answers website visitors' questions, collects service requests, and sends the details directly to your phone while you're on the job.",
+    trustLine: "No setup fee · 6-month initial term",
     heroTerms: "$697/month. 6-month initial term. Then month-to-month with 30 days' written notice.",
 
     ctaPrimary:   "GET STARTED — $697/MONTH",
     ctaSecondary: "SEE HOW IT WORKS",
 
-    pillWebsite: "Website",    pillWebsiteSub: "Turn leads into customers",
-    pillChatbot: "AI Receptionist", pillChatbotSub: "Answer customers 24/7",
+    pillWebsite: "Website",    pillWebsiteSub: "Turns visits into requests",
+    pillChatbot: "AI Chat Assistant", pillChatbotSub: "Answers visitors 24/7",
 
     systemEyebrow: "The System",
-    systemHeading: "A Complete Growth Stack",
-    systemSub:     "Two parts. One system. All your leads.",
+    systemHeading: "What's Included",
+    systemSub:     "Two parts. One system. Every visitor inquiry captured.",
 
-    tab1Label: "Website",         tab1Sub: "Turn leads into customers",
-    tab2Label: "AI Receptionist", tab2Sub: "Answer customers 24/7",
+    tab1Label: "Website",         tab1Sub: "Turns visits into requests",
+    tab2Label: "AI Chat Assistant", tab2Sub: "Answers visitors 24/7",
 
     card1H3:    "Your Website, Built to Turn Visitors Into Calls and Estimate Requests",
-    card1Sub:   "Not a brochure. A machine that books calls while you sleep.",
+    card1Sub:   "Not a brochure. Built to turn visits into estimate requests, day or night.",
     card1Value: "$1,500 value",
     card1Features: [
       "Built for mobile visitors",
@@ -128,20 +129,22 @@ const COPY: Record<Lang, Copy> = {
       "Custom design for your trade and service area",
     ],
 
-    card2H3:    "Your Bilingual Digital Receptionist, Available 24/7",
-    card2Sub:   "Captures service requests even when you're on a job. Never miss another inquiry.",
+    card2H3:    "Your Bilingual AI Chat Assistant, Available 24/7",
+    card2Sub:   "Captures service requests on your site even when you're on a job.",
     card2Value: "$800/mo value",
     card2Features: [
-      "Answers customers in English and Spanish",
+      "Answers website visitors in English and Spanish",
       "Captures service needed, ZIP code, urgency, name, and phone",
       "Sends qualified requests directly to your phone",
-      "Available 24/7 — no missed opportunities",
+      "Available 24/7 — capture website inquiries even after hours",
     ],
 
     // Demo
     demoEyebrow: "See It In Action",
-    demoTitle:   "SEE HOW A VISITOR BECOMES A QUALIFIED LEAD",
-    demoSub:     "While you're on a job, your digital receptionist answers questions, collects the details, and sends the request directly to you.",
+    demoTitle:   "SEE HOW THE CHAT ASSISTANT WORKS",
+    demoSub:     "While you're on a job, the chat assistant on your site answers questions, collects the details, and sends the request directly to you.",
+    demoWindowLabel: "AI Chat Assistant · Website Chat",
+    demoExampleLabel: "Example conversation — not a live chat",
     demoMessages: [
       { from: "customer",  text: "Hi, I need help with a leaking pipe." },
       { from: "assistant", text: "Absolutely — we can help. Is this an emergency, and what ZIP code is the property in?" },
@@ -157,20 +160,14 @@ const COPY: Record<Lang, Copy> = {
     leadAlertPhoneLabel:   "Phone",    leadAlertPhone:    "(201) 555-0147",
     demoDisclaimer: "The assistant captures and routes requests. Service availability, pricing, and scheduling are confirmed by your team.",
 
-    // Value table
-    mathEyebrow: "The Math",
-    mathHeading: "Here's Everything You're Getting",
-    tableColItem: "Item", tableColValue: "Market Value",
-    valueRows: [
-      { item: "Website (Conversion Machine)",  value: "$1,500" },
-      { item: "Bilingual AI Receptionist 24/7", value: "$800/mo" },
-      { item: "Hosting + Support",             value: "$150/mo" },
-      { item: "Monthly Updates & Changes",     value: "$150/mo" },
-    ],
-    totalLabel:  "Total Market Value",
-    totalStrike: "$2,600+/mo",
-    allOfThis:   "All of this, for just:",
-    cancelNote:  "Charged monthly. 6-month initial term. Then month-to-month. Cancel after the initial term with 30 days' written notice.",
+    // Examples section
+    examplesEyebrow: "See What Your Website Could Look Like",
+    examplesHeading: "Example Websites For Trades",
+    examplesSub: "These are example builds — not results from a specific client — showing what the same system looks like for roofing, plumbing, and electrical.",
+
+    // Final CTA
+    finalCtaHeading: "Ready To Get Your Site Live?",
+    finalCtaSub: "Start today. Your website and chat assistant go live in 48–72 hours after we receive what we need.",
 
     // Pricing
     pricingEyebrow: "Get Started",
@@ -178,14 +175,14 @@ const COPY: Record<Lang, Copy> = {
     stepsLabel: "What Happens Next",
     steps: [
       { label: "Today",       desc: "Submit payment, we start building" },
-      { label: "48–72 hours", desc: "Your site and digital receptionist go live" },
-      { label: "Ongoing",     desc: "We handle every update, you handle the calls coming in" },
+      { label: "48–72 hours", desc: "Your site and chat assistant go live, once we have what we need from you" },
+      { label: "Ongoing",     desc: "We handle every update, you handle the requests coming in" },
     ],
     monthly: "Monthly", perMonth: "/month",
     cancelNote2: "Charged monthly. 6-month initial term. Then month-to-month. Cancel after the initial term with 30 days' written notice.",
     includedItems: [
       "Professional conversion website",
-      "Bilingual digital receptionist (24/7)",
+      "Bilingual AI chat assistant (24/7)",
       "Hosting, support & monthly updates",
       "Leads delivered directly to your phone",
       "You own your domain & customer data",
@@ -201,7 +198,7 @@ const COPY: Record<Lang, Copy> = {
       },
       {
         q: "How fast will my site be ready?",
-        a: "48–72 hours after payment. We move fast because we know you need leads now, not next month.",
+        a: "48–72 hours after we receive the information and access we need from you to build it — not from the moment you pay.",
       },
       {
         q: "What if I want changes later?",
@@ -209,7 +206,7 @@ const COPY: Record<Lang, Copy> = {
       },
       {
         q: "Will it work in Spanish?",
-        a: "Yes. The digital receptionist can respond in English and Spanish based on the visitor's language.",
+        a: "Yes. The chat assistant can respond in English and Spanish based on the visitor's language.",
       },
       {
         q: "Where do my leads go?",
@@ -222,6 +219,10 @@ const COPY: Record<Lang, Copy> = {
       {
         q: "Can I cancel?",
         a: "The service has a 6-month initial term. After that, it continues month-to-month and may be canceled with 30 days' written notice.",
+      },
+      {
+        q: "Will this bring me more traffic or customers?",
+        a: "The chat assistant answers and qualifies visitors who already reach your website. It doesn't generate traffic by itself — ad spend and campaign management aren't included.",
       },
       {
         q: "What is not included?",
@@ -239,35 +240,36 @@ const COPY: Record<Lang, Copy> = {
     badge: "PARA TRADES LOCALES",
 
     headlineWords: [
-      { word: "EL",      color: C.phosphorWhite },
-      { word: "SISTEMA", color: C.phosphorWhite },
-      { word: "DE",      color: C.limePulse },
-      { word: "LEADS",   color: C.limePulse },
-      { word: "24/7",    color: C.limePulse },
-      { word: "PARA",    color: C.phosphorWhite },
-      { word: "TRADES",  color: C.phosphorWhite },
-      { word: "LOCALES", color: C.phosphorWhite },
+      { word: "TU",         color: C.phosphorWhite },
+      { word: "SITIO",      color: C.phosphorWhite },
+      { word: "WEB",        color: C.phosphorWhite },
+      { word: "CON",        color: C.phosphorWhite },
+      { word: "ASISTENTE",  color: C.limePulse },
+      { word: "DE",         color: C.limePulse },
+      { word: "CHAT",       color: C.limePulse },
+      { word: "IA",         color: C.limePulse },
+      { word: "BILINGÜE",   color: C.phosphorWhite },
     ],
 
-    subhead: "Un sitio web profesional y una recepcionista digital bilingüe que capturan solicitudes de servicio mientras trabajas.",
-    trustLine: "Sin costo inicial. Inglés y español. Solicitudes enviadas directo a tu teléfono.",
+    subhead: "Responde las preguntas de quienes visitan tu sitio, recopila solicitudes de servicio y te envía los detalles directo al teléfono mientras trabajas.",
+    trustLine: "Sin costo de instalación · Período inicial de 6 meses",
     heroTerms: "$697/mes. Término inicial de 6 meses. Luego mes a mes con 30 días de aviso por escrito.",
 
     ctaPrimary:   "COMENZAR — $697/MES",
     ctaSecondary: "VER CÓMO FUNCIONA",
 
-    pillWebsite: "Sitio Web",       pillWebsiteSub: "Convierte visitas en clientes",
-    pillChatbot: "Recepcionista IA", pillChatbotSub: "Responde clientes 24/7",
+    pillWebsite: "Sitio Web",       pillWebsiteSub: "Convierte visitas en solicitudes",
+    pillChatbot: "Asistente de Chat IA", pillChatbotSub: "Responde visitantes 24/7",
 
     systemEyebrow: "El Sistema",
-    systemHeading: "Un Sistema Completo de Crecimiento",
-    systemSub:     "Dos partes. Un sistema. Todos tus clientes.",
+    systemHeading: "Qué Incluye",
+    systemSub:     "Dos partes. Un sistema. Cada consulta de un visitante, capturada.",
 
-    tab1Label: "Sitio Web",        tab1Sub: "Convierte visitas en clientes",
-    tab2Label: "Recepcionista IA", tab2Sub: "Responde clientes 24/7",
+    tab1Label: "Sitio Web",        tab1Sub: "Convierte visitas en solicitudes",
+    tab2Label: "Asistente de Chat IA", tab2Sub: "Responde visitantes 24/7",
 
     card1H3:    "Tu Sitio Web, Diseñado Para Convertir Visitas en Llamadas y Solicitudes",
-    card1Sub:   "No es un folleto. Es una máquina que genera llamadas mientras duermes.",
+    card1Sub:   "No es un folleto. Está diseñado para convertir visitas en solicitudes de presupuesto, de día o de noche.",
     card1Value: "Valor $1,500",
     card1Features: [
       "Diseñado para visitantes desde celular",
@@ -277,20 +279,22 @@ const COPY: Record<Lang, Copy> = {
       "Diseño personalizado para tu oficio y área",
     ],
 
-    card2H3:    "Tu Recepcionista Digital Bilingüe, Disponible 24/7",
-    card2Sub:   "Captura solicitudes incluso cuando estás trabajando. Nunca pierdas otra consulta.",
+    card2H3:    "Tu Asistente de Chat IA Bilingüe, Disponible 24/7",
+    card2Sub:   "Captura solicitudes en tu sitio incluso cuando estás trabajando.",
     card2Value: "Valor $800/mes",
     card2Features: [
-      "Responde a clientes en inglés y español",
+      "Responde a quienes visitan tu sitio en inglés y español",
       "Captura servicio requerido, ZIP, urgencia, nombre y teléfono",
       "Envía solicitudes calificadas directo a tu teléfono",
-      "Disponible 24/7 — nunca pierde una consulta",
+      "Disponible 24/7 — captura consultas de tu sitio incluso fuera de horario",
     ],
 
     // Demo
     demoEyebrow: "Vélo En Acción",
-    demoTitle:   "VE CÓMO UN VISITANTE SE CONVIERTE EN UN LEAD CALIFICADO",
-    demoSub:     "Mientras estás trabajando, tu recepcionista digital responde preguntas, recopila los detalles y te envía la solicitud directamente.",
+    demoTitle:   "VE CÓMO FUNCIONA EL ASISTENTE DE CHAT",
+    demoSub:     "Mientras estás trabajando, el asistente de chat en tu sitio responde preguntas, recopila los detalles y te envía la solicitud directamente.",
+    demoWindowLabel: "Asistente de Chat IA · Chat del Sitio",
+    demoExampleLabel: "Conversación de ejemplo — no es un chat en vivo",
     demoMessages: [
       { from: "customer",  text: "Hola, necesito ayuda con una tubería que gotea." },
       { from: "assistant", text: "Claro, podemos ayudar. ¿Es una emergencia y en qué ZIP code está la propiedad?" },
@@ -299,27 +303,21 @@ const COPY: Record<Lang, Copy> = {
       { from: "customer",  text: "(201) 555-0147" },
       { from: "assistant", text: "Gracias. Tu solicitud ha sido enviada al equipo. Te contactarán lo antes posible." },
     ],
-    leadAlertLabel:        "NUEVO LEAD ENVIADO AL PROPIETARIO",
+    leadAlertLabel:        "NUEVA SOLICITUD ENVIADA AL PROPIETARIO",
     leadAlertServiceLabel: "Servicio",  leadAlertService:  "Plomería de Emergencia",
     leadAlertLocationLabel:"Ubicación", leadAlertLocation: "07093",
     leadAlertUrgencyLabel: "Urgencia",  leadAlertUrgency:  "Urgente",
     leadAlertPhoneLabel:   "Teléfono",  leadAlertPhone:    "(201) 555-0147",
     demoDisclaimer: "El asistente captura y enruta las solicitudes. El equipo confirma disponibilidad, precios y horarios.",
 
-    // Value table
-    mathEyebrow: "Los Números",
-    mathHeading: "Esto Es Todo Lo Que Recibes",
-    tableColItem: "Qué Incluye", tableColValue: "Valor de Mercado",
-    valueRows: [
-      { item: "Sitio Web (Máquina de Conversión)",    value: "$1,500" },
-      { item: "Recepcionista IA Bilingüe 24/7",       value: "$800/mes" },
-      { item: "Hosting + Soporte",                   value: "$150/mes" },
-      { item: "Actualizaciones Mensuales",            value: "$150/mes" },
-    ],
-    totalLabel:  "Valor Total de Mercado",
-    totalStrike: "$2,600+/mes",
-    allOfThis:   "Todo esto, por solo:",
-    cancelNote:  "Cobro mensual. Término inicial de 6 meses. Luego mes a mes. Cancela después del período inicial con 30 días de aviso por escrito.",
+    // Examples section
+    examplesEyebrow: "Mira Cómo Podría Verse Tu Sitio Web",
+    examplesHeading: "Sitios Web De Ejemplo Para Trades",
+    examplesSub: "Estos son sitios de ejemplo — no resultados de un cliente específico — que muestran cómo se ve el mismo sistema para techado, plomería y electricidad.",
+
+    // Final CTA
+    finalCtaHeading: "¿Listo Para Activar Tu Sitio?",
+    finalCtaSub: "Empezá hoy. Tu sitio web y asistente de chat quedan activos en 48–72 horas después de recibir lo que necesitamos.",
 
     // Pricing
     pricingEyebrow: "Comenzar",
@@ -327,14 +325,14 @@ const COPY: Record<Lang, Copy> = {
     stepsLabel: "Qué Pasa Después",
     steps: [
       { label: "Hoy",           desc: "Envías el pago, empezamos a construir" },
-      { label: "48–72 horas",   desc: "Tu sitio y recepcionista digital quedan activos" },
-      { label: "Continuamente", desc: "Nosotros manejamos cada actualización, tú atiendes las llamadas" },
+      { label: "48–72 horas",   desc: "Tu sitio y asistente de chat quedan activos, una vez que tenemos lo que necesitamos de vos" },
+      { label: "Continuamente", desc: "Nosotros manejamos cada actualización, vos atendés las solicitudes" },
     ],
     monthly: "Mensual", perMonth: "/mes",
     cancelNote2: "Cobro mensual. Término inicial de 6 meses. Luego mes a mes. Cancela después del período inicial con 30 días de aviso por escrito.",
     includedItems: [
       "Sitio web de conversión profesional",
-      "Recepcionista digital bilingüe (24/7)",
+      "Asistente de chat IA bilingüe (24/7)",
       "Hosting, soporte y actualizaciones mensuales",
       "Leads enviados directamente a tu teléfono",
       "Eres dueño de tu dominio y datos de clientes",
@@ -350,7 +348,7 @@ const COPY: Record<Lang, Copy> = {
       },
       {
         q: "¿Cuánto tarda en estar listo mi sitio?",
-        a: "48–72 horas después del pago. Nos movemos rápido porque sabemos que necesitas clientes ahora, no el próximo mes.",
+        a: "48–72 horas después de recibir la información y los accesos que necesitamos de vos para construirlo — no desde el momento del pago.",
       },
       {
         q: "¿Qué pasa si quiero cambios después?",
@@ -358,7 +356,7 @@ const COPY: Record<Lang, Copy> = {
       },
       {
         q: "¿Puede funcionar en español?",
-        a: "Sí. La recepcionista digital puede responder en inglés y español según el idioma del visitante.",
+        a: "Sí. El asistente de chat puede responder en inglés y español según el idioma del visitante.",
       },
       {
         q: "¿A dónde van mis clientes potenciales?",
@@ -371,6 +369,10 @@ const COPY: Record<Lang, Copy> = {
       {
         q: "¿Puedo cancelar?",
         a: "El servicio tiene un término inicial de 6 meses. Después, continúa mes a mes y puede cancelarse con 30 días de aviso por escrito.",
+      },
+      {
+        q: "¿Esto me trae más tráfico o clientes?",
+        a: "El asistente de chat responde y califica a los visitantes que ya llegan a tu sitio. No genera tráfico por sí solo — el gasto en anuncios y la gestión de campañas no están incluidos.",
       },
       {
         q: "¿Qué no está incluido?",
@@ -435,6 +437,7 @@ function IconChatbot({ color = C.limePulse, size = 22 }: { color?: string; size?
 
 // ── Floating dots background ──────────────────────────────────
 function FloatingDots() {
+  const reduceMotion = useReducedMotion();
   const dots = useMemo(() =>
     Array.from({ length: 35 }, (_, i) => ({
       id: i,
@@ -451,7 +454,7 @@ function FloatingDots() {
       {dots.map((d) => (
         <motion.div key={d.id}
           style={{ position: "absolute", left: `${d.x}%`, top: `${d.y}%`, width: `${d.size}px`, height: `${d.size}px`, borderRadius: "50%", background: C.moss70, opacity: d.opacity }}
-          animate={{ y: [-12, 12, -12] }}
+          animate={reduceMotion ? undefined : { y: [-12, 12, -12] }}
           transition={{ duration: d.duration, delay: d.delay, repeat: Infinity, ease: "easeInOut" }}
         />
       ))}
@@ -461,6 +464,7 @@ function FloatingDots() {
 
 // ── Glow orb ─────────────────────────────────────────────────
 function GlowOrb() {
+  const reduceMotion = useReducedMotion();
   return (
     <motion.div aria-hidden="true"
       style={{
@@ -469,7 +473,7 @@ function GlowOrb() {
         background: "radial-gradient(ellipse 55% 70% at 50% 50%, rgba(127,238,100,0.16) 0%, rgba(127,238,100,0.06) 40%, rgba(35,67,30,0.03) 65%, transparent 100%)",
         filter: "blur(56px)", pointerEvents: "none", zIndex: 0,
       }}
-      animate={{ opacity: [0.65, 1, 0.65], scale: [0.97, 1.03, 0.97] }}
+      animate={reduceMotion ? undefined : { opacity: [0.65, 1, 0.65], scale: [0.97, 1.03, 0.97] }}
       transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
     />
   );
@@ -477,6 +481,7 @@ function GlowOrb() {
 
 // ── Chat Demo block ───────────────────────────────────────────
 function ChatDemo({ t }: { t: Copy }) {
+  const reduceMotion = useReducedMotion();
   return (
     <motion.div id="demo"
       variants={revealVariant} initial="hidden" whileInView="visible"
@@ -498,6 +503,17 @@ function ChatDemo({ t }: { t: Copy }) {
       </div>
 
       <div style={{ maxWidth: "560px", margin: "0 auto" }}>
+        {/* Example-conversation badge */}
+        <div style={{ display: "flex", justifyContent: "center", marginBottom: "12px" }}>
+          <span style={{
+            background: "rgba(127,238,100,0.12)", border: "1px solid rgba(127,238,100,0.2)",
+            borderRadius: "6px", padding: "4px 10px", fontSize: "11px", fontWeight: 700,
+            letterSpacing: "0.3px", color: C.limePulse, fontFamily: bodyFont, textTransform: "uppercase",
+          }}>
+            {t.demoExampleLabel}
+          </span>
+        </div>
+
         {/* Chat window */}
         <div style={{
           background: C.carbonVeil, border: `1px solid ${C.circuitBorder}`,
@@ -511,7 +527,7 @@ function ChatDemo({ t }: { t: Copy }) {
           }}>
             <span style={{ width: "8px", height: "8px", borderRadius: "50%", background: C.limePulse, display: "inline-block" }} />
             <span style={{ fontFamily: bodyFont, fontSize: "12px", fontWeight: 600, color: C.moss70, letterSpacing: "0.4px" }}>
-              Digital Receptionist · Online
+              {t.demoWindowLabel}
             </span>
           </div>
 
@@ -553,7 +569,7 @@ function ChatDemo({ t }: { t: Copy }) {
           <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "14px" }}>
             <motion.span
               style={{ width: "8px", height: "8px", borderRadius: "50%", background: C.limePulse, display: "inline-block", flexShrink: 0 }}
-              animate={{ opacity: [1, 0.3, 1] }}
+              animate={reduceMotion ? undefined : { opacity: [1, 0.3, 1] }}
               transition={{ duration: 1.2, repeat: Infinity, ease: "easeInOut" }}
             />
             <span style={{
@@ -595,6 +611,7 @@ export default function TradesSystem() {
   const [lang, setLang]       = useState<Lang>("en");
   const [openFaq, setOpenFaq] = useState<number | null>(null);
   const t = COPY[lang];
+  const reduceMotion = useReducedMotion();
 
   useEffect(() => {
     const fontId = "modal-fonts";
@@ -607,6 +624,36 @@ export default function TradesSystem() {
   }, []);
 
   useEffect(() => { setOpenFaq(null); }, [lang]);
+
+  useEffect(() => {
+    const prevTitle = document.title;
+    document.title = lang === "en"
+      ? "Trade Business Website + Bilingual AI Chat Assistant | NJ Business Web"
+      : "Sitio Web Para Negocios De Oficios + Asistente De Chat IA Bilingüe | NJ Business Web";
+
+    const description = lang === "en"
+      ? "A professional website for your trade business with a bilingual AI chat assistant available 24/7. $697/month, no setup fee, 6-month initial term."
+      : "Un sitio web profesional para tu negocio de oficios con un asistente de chat de IA bilingüe disponible las 24 horas. $697/mes, sin coste de instalación, periodo inicial de 6 meses.";
+
+    let meta = document.querySelector('meta[name="description"]');
+    const createdMeta = !meta;
+    if (!meta) {
+      meta = document.createElement("meta");
+      meta.setAttribute("name", "description");
+      document.head.appendChild(meta);
+    }
+    const prevDescription = meta.getAttribute("content");
+    meta.setAttribute("content", description);
+
+    return () => {
+      document.title = prevTitle;
+      if (createdMeta) {
+        meta?.remove();
+      } else if (prevDescription !== null) {
+        meta?.setAttribute("content", prevDescription);
+      }
+    };
+  }, [lang]);
 
   const scrollTo = (id: string) =>
     document.getElementById(id)?.scrollIntoView({ behavior: "smooth" });
@@ -632,6 +679,7 @@ export default function TradesSystem() {
         {(["en", "es"] as Lang[]).map((l, i) => (
           <button key={l}
             onClick={() => setLang(l)}
+            aria-pressed={lang === l}
             style={{
               padding: "6px 14px",
               background: lang === l ? C.limePulse : "transparent",
@@ -671,11 +719,11 @@ export default function TradesSystem() {
               letterSpacing: "0.7px", color: C.groundIron,
               textTransform: "uppercase", fontFamily: bodyFont,
             }}
-              animate={{ scale: [1, 1.055, 1], opacity: [1, 0.82, 1] }}
+              animate={reduceMotion ? undefined : { scale: [1, 1.055, 1], opacity: [1, 0.82, 1] }}
               transition={{ duration: 2.8, repeat: Infinity, ease: "easeInOut" }}
             >
               <motion.span style={{ width: "6px", height: "6px", borderRadius: "50%", backgroundColor: C.groundIron, flexShrink: 0 }}
-                animate={{ opacity: [1, 0.25, 1] }}
+                animate={reduceMotion ? undefined : { opacity: [1, 0.25, 1] }}
                 transition={{ duration: 1.2, repeat: Infinity, ease: "easeInOut" }}
               />
               {t.badge}
@@ -806,7 +854,12 @@ export default function TradesSystem() {
       </section>
 
       {/* ═══════════════════════════════════════════════════════
-          §2  THE SYSTEM + DEMO
+          §2  DEMO
+      ═══════════════════════════════════════════════════════ */}
+      <ChatDemo t={t} />
+
+      {/* ═══════════════════════════════════════════════════════
+          §3  SERVICES INCLUDED
       ═══════════════════════════════════════════════════════ */}
       <motion.section id="system"
         style={{ padding: "0 24px 80px", maxWidth: "1000px", margin: "0 auto", position: "relative", zIndex: 1 }}
@@ -895,7 +948,7 @@ export default function TradesSystem() {
             </div>
           </motion.div>
 
-          {/* AI Receptionist card */}
+          {/* AI Chat Assistant card */}
           <motion.div variants={cardChildVariant}
             whileHover={{ scale: 1.01, filter: "brightness(1.07)" }} transition={{ duration: 0.25 }}
             style={{
@@ -932,63 +985,76 @@ export default function TradesSystem() {
             </div>
           </motion.div>
         </motion.div>
-
-        {/* ── Chat Demo ── */}
-        <ChatDemo t={t} />
       </motion.section>
 
       {/* ═══════════════════════════════════════════════════════
-          §3  THE MATH / WHAT'S INCLUDED
+          §4  EXAMPLE WEBSITES
       ═══════════════════════════════════════════════════════ */}
-      <motion.section id="included"
-        style={{ padding: "80px 24px", maxWidth: "760px", margin: "0 auto", position: "relative", zIndex: 1 }}
+      <motion.section id="examples"
+        style={{ padding: "0 24px 80px", maxWidth: "1000px", margin: "0 auto", position: "relative", zIndex: 1 }}
         variants={revealVariant} initial="hidden" whileInView="visible"
         viewport={{ once: true, margin: "-60px" }}
       >
-        <div style={{ textAlign: "center", marginBottom: "48px" }}>
-          <p style={eyebrow}>{t.mathEyebrow}</p>
-          <h2 style={{ fontFamily: headingFont, fontWeight: 700, fontSize: "clamp(26px, 4vw, 44px)", letterSpacing: "-0.5px", lineHeight: 1.05, color: C.phosphorWhite, textTransform: "uppercase", margin: 0 }}>
-            {t.mathHeading}
+        <div style={{ textAlign: "center", marginBottom: "36px" }}>
+          <p style={eyebrow}>{t.examplesEyebrow}</p>
+          <h2 style={{
+            fontFamily: headingFont, fontWeight: 700,
+            fontSize: "clamp(22px, 3.5vw, 36px)", letterSpacing: "-0.5px",
+            lineHeight: 1.1, color: C.phosphorWhite, textTransform: "uppercase", margin: "0 0 12px",
+          }}>
+            {t.examplesHeading}
           </h2>
+          <p style={{ fontFamily: bodyFont, fontSize: "15px", color: C.sage60, maxWidth: "520px", margin: "0 auto", lineHeight: 1.65 }}>
+            {t.examplesSub}
+          </p>
         </div>
 
-        <div style={{ border: `1px solid ${C.circuitBorder}`, borderRadius: "8px", overflow: "hidden" }}>
-          <div style={{ display: "flex", justifyContent: "space-between", padding: "12px 28px", borderBottom: `1px solid ${C.circuitBorder}`, background: C.carbonVeil }}>
-            <span style={{ fontSize: "11px", fontWeight: 600, letterSpacing: "0.6px", textTransform: "uppercase", color: C.moss70, fontFamily: bodyFont }}>{t.tableColItem}</span>
-            <span style={{ fontSize: "11px", fontWeight: 600, letterSpacing: "0.6px", textTransform: "uppercase", color: C.moss70, fontFamily: bodyFont }}>{t.tableColValue}</span>
-          </div>
-          {t.valueRows.map((row, i) => (
-            <div key={row.item} style={{
-              display: "flex", justifyContent: "space-between", alignItems: "center",
-              padding: "18px 28px",
-              borderBottom: i < t.valueRows.length - 1 ? `1px solid ${C.circuitBorder}` : "none",
-              background: i % 2 === 0 ? "transparent" : "rgba(33,37,37,0.4)",
-              gap: "16px",
-            }}>
-              <span style={{ fontSize: "15px", letterSpacing: "-0.2px", color: C.sage60 }}>{row.item}</span>
-              <span style={{ fontSize: "14px", fontWeight: 600, color: "rgba(140,171,135,0.45)", textDecoration: "line-through", flexShrink: 0, fontFamily: bodyFont }}>{row.value}</span>
-            </div>
+        <motion.div
+          variants={cardContainerVariant} initial="hidden" whileInView="visible"
+          viewport={{ once: true, margin: "-40px" }}
+          style={{
+            display: "grid",
+            gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))",
+            gap: "16px",
+          }}
+        >
+          {[
+            { label: lang === "en" ? "Roofing Example"    : "Ejemplo Techado",   src: "/videos/roofing-demo.mp4",    accent: "#f97316" },
+            { label: lang === "en" ? "Plumbing Example"   : "Ejemplo Plomería",  src: "/videos/plumbing-demo.mp4",   accent: C.limePulse },
+            { label: lang === "en" ? "Electrical Example" : "Ejemplo Eléctrico", src: "/videos/electrical-demo.mp4", accent: "#facc15" },
+          ].map(({ label, src, accent }) => (
+            <motion.div key={label} variants={cardChildVariant}
+              style={{
+                background: C.carbonVeil,
+                border: `1px solid ${C.circuitBorder}`,
+                borderRadius: "8px", overflow: "hidden",
+              }}
+            >
+              {/* Card header */}
+              <div style={{
+                padding: "12px 16px",
+                borderBottom: `2px solid ${accent}`,
+                display: "flex", alignItems: "center", gap: "8px",
+                background: C.groundIron,
+              }}>
+                <span style={{ width: "7px", height: "7px", borderRadius: "50%", backgroundColor: accent, flexShrink: 0, display: "inline-block" }} />
+                <span style={{ fontFamily: headingFont, fontSize: "13px", fontWeight: 700, color: C.phosphorWhite, letterSpacing: "0.3px" }}>
+                  {label}
+                </span>
+              </div>
+              {/* Video */}
+              <video
+                src={src}
+                autoPlay muted loop playsInline controls
+                style={{ width: "100%", display: "block", maxHeight: 440, objectFit: "cover", background: "#000" }}
+              />
+            </motion.div>
           ))}
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "20px 28px", background: C.groundIron, borderTop: `1px solid ${C.circuitBorder}` }}>
-            <span style={{ fontFamily: headingFont, fontSize: "14px", fontWeight: 700, letterSpacing: "0.5px", textTransform: "uppercase", color: C.phosphorWhite }}>
-              {t.totalLabel}
-            </span>
-            <span style={{ fontFamily: headingFont, fontSize: "22px", fontWeight: 700, color: C.limePulse, letterSpacing: "-0.3px", textDecoration: "line-through" }}>
-              {t.totalStrike}
-            </span>
-          </div>
-          <div style={{ padding: "28px", textAlign: "center", background: "rgba(127,238,100,0.04)", borderTop: "1px solid rgba(127,238,100,0.15)" }}>
-            <div style={{ fontSize: "13px", color: C.moss70, marginBottom: "8px" }}>{t.allOfThis}</div>
-            <div style={{ fontFamily: headingFont, fontWeight: 700, fontSize: "clamp(44px, 8vw, 64px)", letterSpacing: "-0.5px", color: C.limePulse, lineHeight: 1, marginBottom: "10px" }}>
-              $697/month
-            </div>
-            <div style={{ fontSize: "14px", color: C.moss70, lineHeight: 1.65 }}>{t.cancelNote}</div>
-          </div>
-        </div>
+        </motion.div>
       </motion.section>
 
       {/* ═══════════════════════════════════════════════════════
-          §4  HOW IT WORKS + PRICING (2-column)
+          §5  PRICING, CONDITIONS + ONBOARDING PROCESS
       ═══════════════════════════════════════════════════════ */}
       <motion.section id="pricing"
         style={{ padding: "80px 24px 100px", maxWidth: "1000px", margin: "0 auto", position: "relative", zIndex: 1 }}
@@ -1077,7 +1143,7 @@ export default function TradesSystem() {
       </motion.section>
 
       {/* ═══════════════════════════════════════════════════════
-          §5  FAQ
+          §6  FAQ
       ═══════════════════════════════════════════════════════ */}
       <motion.section id="faq"
         style={{ padding: "80px 24px 100px", maxWidth: "680px", margin: "0 auto", position: "relative", zIndex: 1 }}
@@ -1095,13 +1161,23 @@ export default function TradesSystem() {
             <motion.div key={`${lang}-faq-${i}`}
               style={{ border: `1px solid ${C.circuitBorder}`, borderRadius: "8px", overflow: "hidden", cursor: "pointer" }}
               onClick={() => setOpenFaq(openFaq === i ? null : i)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" || e.key === " ") {
+                  e.preventDefault();
+                  setOpenFaq(openFaq === i ? null : i);
+                }
+              }}
+              role="button" tabIndex={0}
+              aria-expanded={openFaq === i}
+              aria-controls={`faq-answer-${i}`}
+              id={`faq-question-${i}`}
               whileHover={{ borderColor: C.moss70 }} transition={{ duration: 0.2 }}
             >
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "18px 22px", gap: "16px" }}>
                 <span style={{ fontSize: "15px", fontWeight: 500, letterSpacing: "-0.2px", color: C.phosphorWhite, lineHeight: 1.4 }}>
                   {item.q}
                 </span>
-                <motion.span
+                <motion.span aria-hidden="true"
                   style={{ color: openFaq === i ? C.limePulse : C.moss70, fontSize: "18px", flexShrink: 0, display: "inline-block", lineHeight: 1 }}
                   animate={{ rotate: openFaq === i ? 45 : 0 }}
                   transition={{ duration: 0.3, ease: "easeOut" }}
@@ -1110,6 +1186,9 @@ export default function TradesSystem() {
               <AnimatePresence initial={false}>
                 {openFaq === i && (
                   <motion.div key="answer"
+                    id={`faq-answer-${i}`}
+                    role="region"
+                    aria-labelledby={`faq-question-${i}`}
                     initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }}
                     exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.3, ease: "easeOut" }}
                     style={{ overflow: "hidden" }}
@@ -1123,6 +1202,40 @@ export default function TradesSystem() {
             </motion.div>
           ))}
         </div>
+      </motion.section>
+
+      {/* ═══════════════════════════════════════════════════════
+          §7  FINAL CTA
+      ═══════════════════════════════════════════════════════ */}
+      <motion.section
+        style={{ padding: "0 24px 100px", maxWidth: "680px", margin: "0 auto", textAlign: "center", position: "relative", zIndex: 1 }}
+        variants={revealVariant} initial="hidden" whileInView="visible"
+        viewport={{ once: true, margin: "-60px" }}
+      >
+        <h2 style={{ fontFamily: headingFont, fontWeight: 700, fontSize: "clamp(26px, 4vw, 40px)", letterSpacing: "-0.5px", lineHeight: 1.1, textTransform: "uppercase", color: C.phosphorWhite, margin: "0 0 14px" }}>
+          {t.finalCtaHeading}
+        </h2>
+        <p style={{ fontFamily: bodyFont, fontSize: "15px", color: C.sage60, maxWidth: "480px", margin: "0 auto 32px", lineHeight: 1.65 }}>
+          {t.finalCtaSub}
+        </p>
+        <motion.a
+          href="https://buy.stripe.com/eVq9AT8zDfwV8Sn1EI8og0a"
+          target="_blank" rel="noopener noreferrer"
+          style={{
+            display: "inline-block", background: C.limePulse, color: C.groundIron,
+            borderRadius: "12px", padding: "16px 40px",
+            fontSize: "15px", fontWeight: 700, letterSpacing: "0.2px",
+            cursor: "pointer", fontFamily: bodyFont, textDecoration: "none",
+            textAlign: "center", textTransform: "uppercase",
+          }}
+          whileHover={{ scale: 1.03, boxShadow: `0 0 32px rgba(127,238,100,0.5)` }}
+          whileTap={{ scale: 0.97 }} transition={{ duration: 0.2 }}
+        >
+          {t.getStartedBtn}
+        </motion.a>
+        <p style={{ fontFamily: bodyFont, fontSize: "12px", color: C.moss70, marginTop: "14px" }}>
+          {t.heroTerms}
+        </p>
       </motion.section>
 
       {/* Footer */}
