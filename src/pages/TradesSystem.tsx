@@ -8,6 +8,9 @@ import { motion, useReducedMotion } from "framer-motion";
 ───────────────────────────────────────────────────────────────── */
 
 const STRIPE_URL = "https://buy.stripe.com/eVq9AT8zDfwV8Sn1EI8og0a";
+const PHONE_E164 = "15513233696";
+const PHONE_DISPLAY = "(551) 323-3696";
+const EMAIL = "njbusinessweb@gmail.com";
 
 // ── Translation types ─────────────────────────────────────────
 type Lang = "en" | "es";
@@ -139,6 +142,16 @@ interface Copy {
   footer: string;
   mobileNote: string;
   mobileGet: string;
+  // Contact
+  contactEyebrow: string;
+  contactTitle: string;
+  contactSub: string;
+  waLabel: string;
+  smsLabel: string;
+  emailLabel: string;
+  waMsg: string;
+  emailSubject: string;
+  floatLabel: string;
 }
 
 // ── Translations ──────────────────────────────────────────────
@@ -366,6 +379,15 @@ const COPY: Record<Lang, Copy> = {
     footer: `© ${new Date().getFullYear()} NJ Business Web. All rights reserved.`,
     mobileNote: "6-month term · 30-day notice",
     mobileGet: "Get started",
+    contactEyebrow: "Have questions first?",
+    contactTitle: "Message us before you sign up",
+    contactSub: "Tell us about your business and what you need. Reach us by WhatsApp, text or email.",
+    waLabel: "WhatsApp",
+    smsLabel: "Text us",
+    emailLabel: "Email",
+    waMsg: "Hi! I'm interested in the website + AI chat assistant for my trade business.",
+    emailSubject: "Website + AI chat assistant for my business",
+    floatLabel: "Questions? WhatsApp us",
   },
 
   es: {
@@ -591,6 +613,15 @@ const COPY: Record<Lang, Copy> = {
     footer: `© ${new Date().getFullYear()} NJ Business Web. Todos los derechos reservados.`,
     mobileNote: "Término 6 meses · Aviso 30 días",
     mobileGet: "Comenzar",
+    contactEyebrow: "¿Tienes preguntas primero?",
+    contactTitle: "Escríbenos antes de inscribirte",
+    contactSub: "Cuéntanos de tu negocio y lo que necesitas. Contáctanos por WhatsApp, mensaje de texto o correo.",
+    waLabel: "WhatsApp",
+    smsLabel: "Mensaje de texto",
+    emailLabel: "Correo",
+    waMsg: "¡Hola! Me interesa el sitio web + asistente de chat IA para mi negocio.",
+    emailSubject: "Sitio web + asistente de chat IA para mi negocio",
+    floatLabel: "¿Preguntas? Escríbenos por WhatsApp",
   },
 };
 
@@ -799,11 +830,32 @@ const CSS = `
 .ts-final{text-align:center;padding:120px 0}
 .ts-final .ts-h2{max-width:820px;margin:0 auto}
 .ts-final p.sub{max-width:560px;margin:20px auto 0;color:#B4C3B0;font-size:17px}
-.ts-footer{padding:26px 0;font-size:13px}
+.ts-footer{padding:26px 0 92px;font-size:13px}
 .ts-footer .ts-wrap{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap}
 .ts-footer b{color:var(--ink);font-weight:600}
 
 /* Mobile sticky bar */
+/* Contact */
+.ts-contact{display:flex;flex-wrap:wrap;gap:10px}
+.ts-cbtn{display:inline-flex;align-items:center;gap:10px;padding:13px 16px;border:1px solid var(--ink);color:var(--ink);background:var(--card);text-decoration:none;font-size:14px;font-weight:500;line-height:1;transition:transform .15s ease,box-shadow .15s ease}
+.ts-cbtn:hover{transform:translate(-2px,-2px);box-shadow:4px 4px 0 var(--shadow)}
+.ts-cbtn small{font-family:'JetBrains Mono',ui-monospace,monospace;font-size:11px;color:var(--muted);letter-spacing:.04em}
+.ts-dark .ts-cbtn{background:transparent;border-color:rgba(250,247,239,.35);color:var(--cream)}
+.ts-dark .ts-cbtn small{color:#9DB09A}
+.ts-dark .ts-cbtn:hover{box-shadow:4px 4px 0 rgba(205,235,166,.35)}
+.ts-contact-box{margin-top:36px;padding:24px;border:1px solid var(--line);background:var(--card)}
+.ts-contact-box .ts-h3{margin:6px 0 8px}
+.ts-contact-box p{font-size:15px;margin-bottom:18px}
+.ts-navmail{color:var(--body);font-size:13px;text-decoration:none}
+.ts-navmail:hover{color:var(--ink);text-decoration:underline}
+.ts-float{position:fixed;right:20px;bottom:20px;z-index:55;display:inline-flex;align-items:center;gap:10px;background:var(--ink);color:var(--cream);padding:13px 16px;text-decoration:none;font-size:14px;font-weight:500;box-shadow:5px 5px 0 #7F9C84;transition:transform .15s ease}
+.ts-float:hover{transform:translate(-2px,-2px)}
+.ts-float svg{color:var(--lime)}
+.ts-footer a{color:var(--body);text-decoration:none}
+.ts-footer a:hover{color:var(--ink);text-decoration:underline}
+@media (max-width:1100px){.ts-navmail{display:none}}
+@media (max-width:767px){.ts-float{bottom:88px;right:16px;padding:13px}.ts-float span{display:none}}
+@media (prefers-reduced-motion: reduce){.ts-cbtn,.ts-float{transition:none}.ts-cbtn:hover,.ts-float:hover{transform:none}}
 .ts-mobilebar{display:none;position:fixed;left:0;right:0;bottom:0;z-index:60;background:var(--cream);border-top:1px solid var(--line);padding:12px 16px;align-items:center;justify-content:space-between;gap:12px}
 .ts-mobilebar b{color:var(--ink);font-size:20px;font-weight:600;letter-spacing:-.02em}
 
@@ -995,6 +1047,48 @@ function Logo({ size = 34 }: { size?: number }) {
 }
 
 const Arrow = () => <span aria-hidden="true">→</span>;
+
+function IconWhatsApp({ size = 18 }: { size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+      <path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2zm0 18.2c-1.5 0-3-.4-4.3-1.2l-.3-.2-3 .8.8-2.9-.2-.3A8.2 8.2 0 1 1 12 20.2zm4.5-6.1c-.2-.1-1.5-.7-1.7-.8-.2-.1-.4-.1-.6.1l-.8 1c-.1.2-.3.2-.5.1a6.7 6.7 0 0 1-3.3-2.9c-.3-.4.3-.4.7-1.3.1-.2 0-.3 0-.4l-.8-1.8c-.2-.5-.4-.4-.6-.4h-.5a1 1 0 0 0-.7.3 3 3 0 0 0-.9 2.2c0 1.3.9 2.5 1.1 2.7.1.2 1.8 2.8 4.4 3.9 1.6.7 2.3.8 3.1.6.5-.1 1.5-.6 1.7-1.2.2-.6.2-1.1.1-1.2l-.7-.7z" />
+    </svg>
+  );
+}
+function IconSms({ size = 18 }: { size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round" aria-hidden="true">
+      <path d="M4 5h16v11H9l-5 4z" /><path d="M8 10h8M8 13h5" />
+    </svg>
+  );
+}
+function IconMail({ size = 18 }: { size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round" aria-hidden="true">
+      <rect x="3" y="5" width="18" height="14" /><path d="M3 6l9 7 9-7" />
+    </svg>
+  );
+}
+
+const waHref = (msg: string) => `https://wa.me/${PHONE_E164}?text=${encodeURIComponent(msg)}`;
+const smsHref = (msg: string) => `sms:+${PHONE_E164}?&body=${encodeURIComponent(msg)}`;
+const mailHref = (subject: string) => `mailto:${EMAIL}?subject=${encodeURIComponent(subject)}`;
+
+function ContactButtons({ t }: { t: Copy }) {
+  return (
+    <div className="ts-contact">
+      <a className="ts-cbtn" href={waHref(t.waMsg)} target="_blank" rel="noopener noreferrer">
+        <IconWhatsApp /> {t.waLabel}
+      </a>
+      <a className="ts-cbtn" href={smsHref(t.waMsg)}>
+        <IconSms /> {t.smsLabel} <small>{PHONE_DISPLAY}</small>
+      </a>
+      <a className="ts-cbtn" href={mailHref(t.emailSubject)}>
+        <IconMail /> {t.emailLabel} <small>{EMAIL}</small>
+      </a>
+    </div>
+  );
+}
 
 function CtaLink({ children, light, small, className }: { children: ReactNode; light?: boolean; small?: boolean; className?: string }) {
   return (
@@ -1252,6 +1346,7 @@ export default function TradesSystem() {
             </span>
           </a>
           <div className="ts-nav-r">
+            <a className="ts-navmail" href={mailHref(t.emailSubject)}>{EMAIL}</a>
             <div className="ts-lang" role="group" aria-label={t.langLabel}>
               {(["en", "es"] as Lang[]).map((l) => (
                 <button key={l} type="button" onClick={() => setLang(l)} aria-pressed={lang === l}>
@@ -1627,6 +1722,9 @@ export default function TradesSystem() {
                 <p style={{ fontSize: 14, lineHeight: 1.6 }}>{t.termsLine}</p>
                 <CtaLink light>{t.getStartedBtn}</CtaLink>
                 <span className="ts-mono" style={{ color: "#9DB09A" }}>🔒 {t.secureNote}</span>
+                <a href={waHref(t.waMsg)} target="_blank" rel="noopener noreferrer" style={{ color: "var(--lime)", fontSize: 14, display: "inline-flex", alignItems: "center", gap: 8 }}>
+                  <IconWhatsApp size={16} /> {t.contactEyebrow}
+                </a>
               </div>
             </Reveal>
 
@@ -1680,6 +1778,12 @@ export default function TradesSystem() {
             <Reveal>
               <p className="ts-eyebrow">{t.faqEyebrow}</p>
               <h2 className="ts-h2">{t.faqHeading}</h2>
+              <div className="ts-contact-box">
+                <span className="ts-mono" style={{ color: "var(--muted)" }}>{t.contactEyebrow}</span>
+                <h3 className="ts-h3">{t.contactTitle}</h3>
+                <p>{t.contactSub}</p>
+                <ContactButtons t={t} />
+              </div>
             </Reveal>
             <Reveal delay={0.08}>
               <ul className="ts-faq">
@@ -1712,6 +1816,10 @@ export default function TradesSystem() {
                 <CtaLink light>{t.getStartedBtn}</CtaLink>
                 <span className="ts-mono" style={{ color: "#9DB09A" }}>{t.ctaNote}</span>
               </div>
+              <div style={{ marginTop: 44, display: "flex", flexDirection: "column", alignItems: "center", gap: 14 }}>
+                <span className="ts-mono" style={{ color: "#9DB09A" }}>{t.contactEyebrow}</span>
+                <ContactButtons t={t} />
+              </div>
             </Reveal>
           </div>
         </section>
@@ -1720,9 +1828,17 @@ export default function TradesSystem() {
       <footer className="ts-footer">
         <div className="ts-wrap">
           <span><b>NJ Business Web</b>&nbsp;&nbsp;{t.footer}</span>
-          <span className="ts-mono" style={{ color: "var(--muted)" }}>{t.ctaNote}</span>
+          <span style={{ display: "flex", gap: 18, flexWrap: "wrap" }}>
+            <a href={smsHref(t.waMsg)}>{PHONE_DISPLAY}</a>
+            <a href={mailHref(t.emailSubject)}>{EMAIL}</a>
+          </span>
         </div>
       </footer>
+
+      {/* ── Floating WhatsApp button ── */}
+      <a className="ts-float" href={waHref(t.waMsg)} target="_blank" rel="noopener noreferrer" aria-label={t.floatLabel}>
+        <IconWhatsApp size={20} /><span>{t.floatLabel}</span>
+      </a>
 
       {/* ── Mobile sticky bar ── */}
       <div className="ts-mobilebar">
