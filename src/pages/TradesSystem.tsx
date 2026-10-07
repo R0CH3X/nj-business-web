@@ -633,6 +633,10 @@ const CSS = `
 .ts-nav{position:sticky;top:0;z-index:50;background:rgba(250,247,239,.92);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
 .ts-nav-in{display:flex;align-items:center;justify-content:space-between;gap:16px;height:64px}
 .ts-logo{display:flex;align-items:center;gap:10px;color:var(--ink);font-weight:600;font-size:18px;letter-spacing:-.02em;text-decoration:none}
+.ts-logo-txt{display:flex;flex-direction:column;line-height:1}
+.ts-logo-word{font-size:19px;font-weight:700;letter-spacing:.01em}
+.ts-logo-word span{font-weight:400;color:#3E6B4F}
+.ts-logo-tag{font-size:8.5px;font-weight:500;letter-spacing:.24em;text-transform:uppercase;color:var(--body);margin-top:5px}
 .ts-nav-r{display:flex;align-items:center;gap:14px}
 .ts-lang{display:flex;border:1px solid var(--line)}
 .ts-lang button{background:transparent;border:0;padding:8px 11px;cursor:pointer;color:var(--body);font-family:'JetBrains Mono',ui-monospace,monospace;font-size:11px;font-weight:500;letter-spacing:.1em}
@@ -896,6 +900,8 @@ const CSS = `
   .ts{padding-bottom:76px}
   .ts-mobilebar{display:flex}
   .ts-nav-cta{display:none}
+  .ts-logo-word{font-size:16px}
+  .ts-logo-tag{display:none}
   .ts-hero{padding:52px 0 72px}
   .ts-mock-body{grid-template-columns:1fr}
   .ts-mock-site{border-right:0;border-bottom:1px solid var(--line)}
@@ -979,11 +985,11 @@ function Marquee({ items, render, className, slow }: { items: string[]; render: 
   );
 }
 
-function Logo() {
+function Logo({ size = 34 }: { size?: number }) {
   return (
-    <svg width="26" height="26" viewBox="0 0 26 26" aria-hidden="true">
-      <rect x="1" y="1" width="24" height="24" fill="#0B2418" />
-      <path d="M7 18V8l6 7V8M15 8h4v7.5a2.5 2.5 0 0 1-4 2" fill="none" stroke="#FAF7EF" strokeWidth="2" strokeLinecap="square" />
+    <svg width={size} height={size * 0.93} viewBox="55 40 420 390" aria-hidden="true">
+      <polygon points="60,425 178,45 335,210 318,245 200,150 150,322 208,298 228,332" fill="#0B2418" />
+      <polygon points="470,45 352,425 195,260 212,225 330,320 380,148 322,172 302,138" fill="#5E9A6B" />
     </svg>
   );
 }
@@ -1239,7 +1245,11 @@ export default function TradesSystem() {
       <header className="ts-nav">
         <div className="ts-wrap ts-nav-in">
           <a href="#top" className="ts-logo" aria-label="NJ Business Web">
-            <Logo /> NJ Business Web
+            <Logo />
+            <span className="ts-logo-txt">
+              <span className="ts-logo-word">NJBUSINESS<span>WEB</span></span>
+              <span className="ts-logo-tag">Strategic Growth Partners</span>
+            </span>
           </a>
           <div className="ts-nav-r">
             <div className="ts-lang" role="group" aria-label={t.langLabel}>
